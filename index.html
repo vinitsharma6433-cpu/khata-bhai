@@ -1,21 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#ff8f00">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="refresh" content="0; url=./KhataBhai.html">
   <link rel="manifest" href="./manifest.json">
   <title>Khata Bhai - Digital Ledger</title>
-  <script>
-    if('serviceWorker' in navigator){
-      navigator.serviceWorker.register('./sw.js')
-        .then(function(r){ console.log('SW registered:', r.scope); })
-        .catch(function(e){ console.log('SW error:', e); });
-    }
-    window.location.replace('./KhataBhai.html');
-  </script>
 </head>
-<body></body>
+<body>
+  <script>window.location.href='./KhataBhai.html';</script>
+</body>
 </html>
