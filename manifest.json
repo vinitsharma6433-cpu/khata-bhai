@@ -3,7 +3,7 @@
   "name": "Khata Bhai - Digital Ledger",
   "short_name": "Khata Bhai",
   "description": "Digital Ledger App - Accounts & Khata Book by NDS",
-  "start_url": "./KhataBhai.html",
+ "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
@@ -19,7 +19,7 @@
     {
       "name": "Add Entry",
       "short_name": "Add",
-      "url": "./KhataBhai.html"
+      "url": "./index.html"
     }
   ],
   "icons": [
