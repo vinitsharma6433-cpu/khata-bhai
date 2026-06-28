@@ -4,11 +4,24 @@
   "short_name": "Khata Bhai",
   "description": "Digital Ledger App - Accounts & Khata Book by NDS",
   "start_url": "./KhataBhai.html",
+  "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#1a1a2e",
   "theme_color": "#ff8f00",
   "orientation": "portrait",
   "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "shortcuts": [
+    {
+      "name": "Add Entry",
+      "short_name": "Add",
+      "url": "./KhataBhai.html"
+    }
+  ],
   "icons": [
     {
       "src": "./icon-192.png",
@@ -46,9 +59,7 @@
       "label": "Settings"
     }
   ],
-  "categories": [
-    "finance",
-    "business",
-    "productivity"
-  ]
+  "categories": ["finance", "business", "productivity"]
 }
+      
+    
