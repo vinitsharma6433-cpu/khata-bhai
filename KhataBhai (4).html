@@ -1,0 +1,2058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#ff8f00">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="./manifest.json">
+<title>Khata Bhai</title>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('./sw.js').catch(function(){});
+  });
+}
+</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0d0f1a;--card:#161928;--card2:#1c2035;--border:#252a40;
+  --green:#00e676;--red:#ff1744;--blue:#448aff;--gold:#ffca28;--orange:#ff8f00;
+  --text:#eceff1;--muted:#607d8b;--surface:#1e2338;--surface2:#252a40;
+  --sell:#00e676;--buy:#ff6d00;--recv:#448aff;--pay:#ff1744;
+}
+body.light{--bg:#f5f5f5;--card:#fff;--card2:#fafafa;--border:#e0e0e0;--text:#212121;--muted:#757575;--surface:#eeeeee;--surface2:#e0e0e0;}
+body{background:var(--bg);color:var(--text);font-family:sans-serif;min-height:100vh;padding-bottom:0;}
+
+/* PIN */
+.pin-screen{position:fixed;inset:0;background:#0d0f1a;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
+.pin-screen.hide{display:none;}
+.pin-logo{width:70px;height:70px;background:linear-gradient(135deg,#ffca28,#ff8f00);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900;color:#000;}
+.pdots{display:flex;gap:14px;margin:6px 0;}
+.pdot{width:14px;height:14px;border-radius:50%;border:2px solid #ffca28;}
+.pdot.filled{background:#ffca28;}
+.perr{color:#ff1744;font-size:13px;height:16px;}
+.ppad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:250px;}
+.pbtn{background:#1e2338;border:1px solid #252a40;border-radius:14px;padding:15px;font-size:22px;font-weight:800;color:#eceff1;cursor:pointer;font-family:inherit;transition:background 0.1s;}
+.pbtn:active{background:#ffca28;color:#000;}
+
+/* SETUP */
+.setup{position:fixed;inset:0;background:#0d0f1a;z-index:9998;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:12px;}
+
+/* HEADER */
+.hdr{background:var(--card2);border-bottom:1px solid var(--border);padding:10px 14px 0;position:sticky;top:0;z-index:200;box-shadow:0 2px 16px rgba(0,0,0,0.4);}
+.hdr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.brand{display:flex;align-items:center;gap:9px;}
+.blogo{width:36px;height:36px;background:linear-gradient(135deg,#ffca28,#ff8f00);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;color:#000;}
+.bname{font-size:15px;font-weight:900;color:#ffca28;line-height:1.1;}
+.bsub{font-size:10px;color:var(--muted);}
+.hbtns{display:flex;gap:5px;align-items:center;}
+.hbtn{background:var(--surface);border:none;border-radius:8px;padding:8px 10px;color:var(--muted);font-size:15px;cursor:pointer;}
+.add-btn{background:linear-gradient(135deg,#00e676,#00c853);border:none;border-radius:9px;padding:9px 14px;color:#000;font-weight:900;font-size:14px;cursor:pointer;font-family:inherit;}
+.tabs{display:flex;overflow-x:auto;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{background:transparent;color:var(--muted);border:none;border-bottom:3px solid transparent;padding:9px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all 0.2s;}
+.tab.active{color:#ffca28;border-bottom-color:#ffca28;}
+
+/* OVERLAY & MENU */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:490;display:none;}
+.overlay.show{display:block;}
+.smenu{position:fixed;top:0;right:-290px;width:280px;height:100vh;background:var(--card2);border-left:1px solid var(--border);z-index:500;transition:right 0.3s;padding:50px 0 20px;overflow-y:auto;}
+.smenu.open{right:0;}
+.mcls{position:absolute;top:12px;right:12px;background:var(--surface);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;color:var(--muted);font-size:17px;}
+.msec{font-size:11px;font-weight:700;color:var(--muted);padding:10px 16px 4px;text-transform:uppercase;letter-spacing:1px;}
+.mitem{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--border);}
+.mico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;}
+.mtxt{font-size:13px;font-weight:700;}
+.mdes{font-size:11px;color:var(--muted);}
+
+/* SEARCH */
+.srch{padding:8px 14px;background:var(--card2);border-bottom:1px solid var(--border);display:none;}
+.srch.show{display:block;}
+.srch input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:14px;outline:none;font-family:inherit;}
+
+/* MAIN */
+.main{padding:12px;}
+.tc{display:none;}
+.tc.active{display:block;}
+
+/* STAT CARDS */
+.sg2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.sg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px;}
+.scard{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:12px;border-left:4px solid;cursor:pointer;transition:transform 0.12s;}
+.scard:active{transform:scale(0.94);}
+.si{font-size:16px;margin-bottom:3px;}
+.sv{font-weight:900;font-size:14px;line-height:1.2;}
+.sl{color:var(--muted);font-size:10px;margin-top:2px;font-weight:600;text-transform:uppercase;}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:13px;margin-bottom:11px;}
+.ctitle{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.8px;display:flex;justify-content:space-between;align-items:center;}
+
+/* PARTY ROW */
+.prow{display:flex;align-items:center;padding:11px;margin-bottom:6px;border-radius:11px;background:var(--surface);border:1px solid var(--border);cursor:pointer;transition:transform 0.1s;}
+.prow:active{transform:scale(0.97);}
+.pav{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#ffca28,#ff8f00);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#000;flex-shrink:0;margin-right:10px;}
+.pinfo{flex:1;min-width:0;}
+.pname{font-weight:800;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.psub{font-size:11px;color:var(--muted);}
+.pbal{font-weight:900;font-size:14px;text-align:right;white-space:nowrap;}
+.pbs{font-size:10px;text-align:right;}
+
+/* ENTRY ROW */
+.erow{display:flex;align-items:flex-start;padding:11px;margin-bottom:6px;border-radius:11px;background:var(--surface);border:1px solid var(--border);}
+.eico{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.eico.sell{background:rgba(0,230,118,0.15);}
+.eico.buy{background:rgba(255,109,0,0.15);}
+.eico.receive{background:rgba(68,138,255,0.15);}
+.eico.pay{background:rgba(255,23,68,0.15);}
+.eico.in{background:rgba(0,230,118,0.15);}
+.eico.out{background:rgba(255,23,68,0.15);}
+.eico.maal{background:rgba(255,109,0,0.15);}
+.einfo{flex:1;margin-left:8px;min-width:0;}
+.etitle{font-weight:700;font-size:13px;}
+.emeta{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4;}
+.eright{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;margin-left:6px;}
+.eamt{font-weight:900;font-size:14px;}
+.ebal-badge{font-size:10px;font-weight:700;padding:2px 6px;border-radius:5px;}
+.ebtns{display:flex;gap:2px;}
+.abtn{background:transparent;border:none;cursor:pointer;font-size:17px;padding:5px;line-height:1;}
+
+/* STOCK ROW */
+.strow{display:flex;align-items:center;padding:10px;margin-bottom:6px;border-radius:10px;background:var(--surface);border:1px solid var(--border);}
+
+/* FILTER */
+.fbar{display:flex;gap:5px;margin-bottom:10px;overflow-x:auto;scrollbar-width:none;}
+.fbar::-webkit-scrollbar{display:none;}
+.fbtn{padding:7px 12px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.fbtn.active{background:#ffca28;color:#000;border-color:#ffca28;}
+
+/* MODAL */
+.modal{position:fixed;inset:0;z-index:600;display:none;align-items:flex-end;}
+.modal.open{display:flex;}
+#editMod{z-index:700;}
+#delMod{z-index:700;}
+#clearMod{z-index:700;}
+.mbg{position:absolute;inset:0;background:rgba(0,0,0,0.8);}
+.mbox{position:relative;z-index:1;background:var(--card2);border-radius:20px 20px 0 0;padding:16px 16px 28px;width:100%;border-top:1px solid var(--border);max-height:92vh;overflow-y:auto;}
+.mhandle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px;}
+.mtitle{font-size:16px;font-weight:800;color:#ffca28;margin-bottom:14px;}
+
+/* FORM */
+input,select,textarea{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:15px;margin-bottom:10px;outline:none;font-family:inherit;}
+input:focus,select:focus,textarea:focus{border-color:#ffca28;}
+input::placeholder,textarea::placeholder{color:var(--muted);}
+select option{background:var(--card);}
+.frow{display:flex;gap:8px;}
+.frow>*{flex:1;margin-bottom:8px;}
+.save-btn{width:100%;background:linear-gradient(135deg,#00e676,#00c853);border:none;border-radius:12px;padding:15px;color:#000;font-weight:900;font-size:16px;cursor:pointer;font-family:inherit;margin-top:6px;}
+.cnl-btn{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px;color:var(--muted);font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;margin-top:6px;}
+
+/* TYPE BUTTONS in form */
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.tbtn{border:none;border-radius:12px;padding:14px 10px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;justify-content:center;opacity:0.5;transition:all 0.2s;}
+.tbtn.sel{opacity:1;transform:scale(1.02);}
+.tbtn-sell{background:rgba(0,230,118,0.15);color:#00e676;border:2px solid transparent;}
+.tbtn-sell.sel{background:rgba(0,230,118,0.25);border-color:#00e676;}
+.tbtn-buy{background:rgba(255,109,0,0.15);color:#ff6d00;border:2px solid transparent;}
+.tbtn-buy.sel{background:rgba(255,109,0,0.25);border-color:#ff6d00;}
+.tbtn-recv{background:rgba(68,138,255,0.15);color:#448aff;border:2px solid transparent;}
+.tbtn-recv.sel{background:rgba(68,138,255,0.25);border-color:#448aff;}
+.tbtn-pay{background:rgba(255,23,68,0.15);color:#ff1744;border:2px solid transparent;}
+.tbtn-pay.sel{background:rgba(255,23,68,0.25);border-color:#ff1744;}
+
+/* INFO BOXES */
+.ibox{border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:13px;font-weight:700;display:none;}
+.ibox-green{background:rgba(0,230,118,0.1);border:1px solid #00e676;color:#00e676;}
+.ibox-orange{background:rgba(255,109,0,0.12);border:1px solid #ff6d00;color:#ff6d00;}
+.ibox-red{background:rgba(255,23,68,0.1);border:1px solid #ff1744;color:#ff1744;}
+.ibox-blue{background:rgba(68,138,255,0.1);border:1px solid #448aff;color:#448aff;}
+
+/* ITEM LINE */
+.item-line{display:flex;align-items:center;gap:6px;padding:8px 10px;background:rgba(255,109,0,0.08);border-radius:8px;margin-bottom:6px;font-size:12px;}
+.item-name{flex:1;font-weight:700;}
+.item-del{background:#ff1744;border:none;border-radius:6px;width:22px;height:22px;color:#fff;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+/* EMPTY */
+.empty{text-align:center;color:var(--muted);padding:32px 16px;font-size:14px;}
+.eico-big{font-size:40px;margin-bottom:8px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1c2035;border:1px solid #ffca28;border-radius:12px;padding:10px 20px;font-size:13px;font-weight:700;color:#ffca28;z-index:9999;opacity:0;pointer-events:none;transition:opacity 0.3s;white-space:nowrap;max-width:90vw;}
+.toast.show{opacity:1;}
+
+/* SUG BOX */
+.sugbox{position:absolute;left:0;right:0;top:100%;z-index:9999;background:var(--card);border:1.5px solid #448aff;border-radius:0 0 12px 12px;max-height:180px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.5);}
+.sugitem{padding:10px 14px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.sugitem:active,.sugitem:hover{background:var(--surface2);}
+
+/* LANG GRID */
+.lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.lbtn{padding:13px;border-radius:10px;border:2px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.2s;}
+.lbtn.active{border-color:#ffca28;color:#ffca28;background:rgba(255,202,40,0.1);}
+
+@media print{
+  .hdr,.smenu,.overlay,.toast,.ebtns,.fbar,.srch,.action-bar,
+  button:not(#printBill button),.modal:not(#billMod){display:none!important;}
+  body{background:#fff!important;color:#000!important;padding:0;}
+  .tc{display:block!important;}
+  .erow{break-inside:avoid;border:1px solid #ccc;margin-bottom:4px;padding:8px;}
+  .scard{border:1px solid #ccc;}
+}
+</style>
+</head>
+<body>
+
+<!-- PIN -->
+<div class="pin-screen" id="pinScr">
+  <div class="pin-logo">N</div>
+  <div style="font-size:20px;font-weight:900;color:#ffca28;">Khata Bhai</div>
+  <div style="font-size:12px;color:#ff8f00;font-weight:700;">by NDS</div>
+  <div style="font-size:12px;color:var(--muted);margin-bottom:4px;" id="pinLabel">PIN डालें</div>
+  <div class="pdots">
+    <div class="pdot" id="d0"></div><div class="pdot" id="d1"></div>
+    <div class="pdot" id="d2"></div><div class="pdot" id="d3"></div>
+  </div>
+  <div class="perr" id="perr"></div>
+  <div class="ppad">
+    <button class="pbtn" onclick="pp('1')">1</button>
+    <button class="pbtn" onclick="pp('2')">2</button>
+    <button class="pbtn" onclick="pp('3')">3</button>
+    <button class="pbtn" onclick="pp('4')">4</button>
+    <button class="pbtn" onclick="pp('5')">5</button>
+    <button class="pbtn" onclick="pp('6')">6</button>
+    <button class="pbtn" onclick="pp('7')">7</button>
+    <button class="pbtn" onclick="pp('8')">8</button>
+    <button class="pbtn" onclick="pp('9')">9</button>
+    <button class="pbtn" style="font-size:18px;color:#ffca28;">⭐</button>
+    <button class="pbtn" onclick="pp('0')">0</button>
+    <button class="pbtn" onclick="pdel()">⌫</button>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div class="setup" id="setupScr">
+  <div style="font-size:52px;">📒</div>
+  <div style="font-size:22px;font-weight:900;color:#ffca28;">Khata Bhai में स्वागत!</div>
+  <div style="font-size:12px;color:#ff8f00;">by NDS — आपका डिजिटल हिसाब</div>
+  <div style="width:100%;max-width:340px;margin-top:16px;">
+    <input id="sShop" placeholder="🏪 दुकान / व्यापार का नाम *" style="font-size:16px;font-weight:700;">
+    <input id="sOwner" placeholder="👤 मालिक का नाम (optional)" style="font-size:15px;">
+    <button onclick="doSetup()" style="width:100%;background:linear-gradient(135deg,#00e676,#00c853);border:none;border-radius:13px;padding:16px;color:#000;font-weight:900;font-size:17px;cursor:pointer;font-family:inherit;">✅ शुरू करें</button>
+    <div style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center;">सारा data इसी phone में — कोई server नहीं</div>
+  </div>
+</div>
+
+<div class="overlay" id="ovl" onclick="closeMenu()"></div>
+
+<!-- SLIDE MENU -->
+<div class="smenu" id="smenu">
+  <button class="mcls" onclick="closeMenu()">✕</button>
+  <div style="padding:0 16px 12px;border-bottom:1px solid var(--border);">
+    <div style="font-size:15px;font-weight:900;color:#ffca28;" id="mShop">Khata Bhai</div>
+    <div style="font-size:11px;color:var(--muted);">by NDS</div>
+  </div>
+  <div class="msec">⚙️ Settings</div>
+  <div class="mitem" onclick="openShopMod();closeMenu()">
+    <div class="mico" style="background:rgba(255,202,40,0.15);">🏪</div>
+    <div><div class="mtxt" id="mShopLbl">दुकान जानकारी</div><div class="mdes">नाम, पता, फोन</div></div>
+  </div>
+  <div class="mitem" onclick="openModal('pinMod');closeMenu()">
+    <div class="mico" style="background:rgba(68,138,255,0.15);">🔐</div>
+    <div><div class="mtxt" id="mPinLbl">PIN बदलें</div><div class="mdes">App Security</div></div>
+  </div>
+  <div class="mitem" onclick="toggleTheme();closeMenu()">
+    <div class="mico" style="background:rgba(206,147,216,0.15);">🌙</div>
+    <div><div class="mtxt" id="mThemeLbl">Light Mode</div><div class="mdes" id="mThemeDes">Theme बदलें</div></div>
+  </div>
+  <div class="mitem" onclick="openModal('langMod');closeMenu()">
+    <div class="mico" style="background:rgba(255,143,0,0.15);">🌐</div>
+    <div><div class="mtxt">भाषा / Language</div><div class="mdes" id="mLangName">हिंदी</div></div>
+  </div>
+  <div class="msec">💾 Data</div>
+  <div class="mitem" onclick="doBackup();closeMenu()">
+    <div class="mico" style="background:rgba(0,230,118,0.15);">📤</div>
+    <div><div class="mtxt" id="mBackLbl">Backup</div><div class="mdes">Download / WhatsApp</div></div>
+  </div>
+  <div class="mitem" onclick="openModal('restoreMod');closeMenu()">
+    <div class="mico" style="background:rgba(68,138,255,0.15);">📥</div>
+    <div><div class="mtxt" id="mRestLbl">Restore</div><div class="mdes">Backup से restore</div></div>
+  </div>
+  <div class="mitem" onclick="document.getElementById('rFile').click();closeMenu()">
+    <div class="mico" style="background:rgba(206,147,216,0.15);">📁</div>
+    <div><div class="mtxt">Restore (File)</div><div class="mdes">File से restore</div></div>
+  </div>
+  <div class="mitem" onclick="clearAll();closeMenu()">
+    <div class="mico" style="background:rgba(255,23,68,0.15);">🗑️</div>
+    <div><div class="mtxt" id="mClearLbl">Data साफ करें</div><div class="mdes">सब delete होगा</div></div>
+  </div>
+  <div class="mitem" onclick="openMyNum();closeMenu()">
+    <div class="mico" style="background:rgba(37,211,102,0.15);">📱</div>
+    <div><div class="mtxt">My Number</div><div class="mdes" id="mMyNum">Backup के लिए नंबर</div></div>
+  </div>
+  <div class="mitem" onclick="openModal('waParseMod');closeMenu()">
+    <div class="mico" style="background:rgba(37,211,102,0.15);">📲</div>
+    <div><div class="mtxt">WhatsApp से Entry</div><div class="mdes">Message paste करके entry</div></div>
+  </div>
+  <div class="mitem" onclick="openDue();closeMenu()">
+    <div class="mico" style="background:rgba(255,23,68,0.15);">🔔</div>
+    <div><div class="mtxt">Due Date Reminder</div><div class="mdes" id="mDueDes">तारीख तय करें</div></div>
+  </div>
+  <input type="file" id="rFile" accept=".json" style="display:none" onchange="restoreFile(this)">
+</div>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-top">
+    <div class="brand">
+      <div class="blogo">N</div>
+      <div>
+        <div class="bname" id="hName">Khata Bhai</div>
+        <div class="bsub" id="hSub">by NDS</div>
+      </div>
+    </div>
+    <div class="hbtns">
+      <button class="hbtn" onclick="toggleSearch()">🔍</button>
+      <button class="hbtn" onclick="doRefresh()">🔄</button>
+      <button class="add-btn" onclick="openAdd()" id="addBtnEl">+ जोड़ें</button>
+      <button class="hbtn" onclick="openMenu()">☰</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="goTab(0)" id="tab0">🏠 Dashboard</button>
+    <button class="tab" onclick="goTab(1)" id="tab1">👥 Parties</button>
+    <button class="tab" onclick="goTab(2)" id="tab2">📋 Khata</button>
+    <button class="tab" onclick="goTab(3)" id="tab3">📦 Stock</button>
+    <button class="tab" onclick="goTab(4)" id="tab4">📊 Report</button>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div class="srch" id="srchBar">
+  <input id="srchIn" placeholder="नाम, माल, राशि खोजें..." oninput="doSearch()">
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- TAB 0: DASHBOARD -->
+<div class="tc active" id="tc0">
+  <div id="dueBanner"></div>
+  <div class="sg2" id="dashStats"></div>
+  <div class="card">
+    <div class="ctitle"><span id="todayLbl">📅 आज का हिसाब</span><span id="todayDt" style="font-size:11px;font-weight:500;"></span></div>
+    <div id="todayList"></div>
+  </div>
+  <div class="card">
+    <div class="ctitle" id="partyOvLbl">👥 Parties</div>
+    <div id="dashParties"></div>
+  </div>
+</div>
+
+<!-- TAB 1: PARTIES -->
+<div class="tc" id="tc1">
+  <div class="fbar">
+    <button class="fbtn active" onclick="setPF('all',this)" id="pf0">सभी</button>
+    <button class="fbtn" onclick="setPF('recv',this)" id="pf1">💰 लेनी है</button>
+    <button class="fbtn" onclick="setPF('pay',this)" id="pf2">💸 देनी है</button>
+    <button class="fbtn" onclick="setPF('zero',this)" id="pf3">✅ Settled</button>
+  </div>
+  <div id="partyList"></div>
+</div>
+
+<!-- TAB 2: KHATA -->
+<div class="tc" id="tc2">
+  <div class="fbar">
+    <button class="fbtn active" onclick="setKF('all',this)">सभी</button>
+    <button class="fbtn" onclick="setKF('sell',this)" id="kfSell">🛒 बेचा</button>
+    <button class="fbtn" onclick="setKF('buy',this)" id="kfBuy">📦 खरीदा</button>
+    <button class="fbtn" onclick="setKF('receive',this)" id="kfRecv">💰 आई</button>
+    <button class="fbtn" onclick="setKF('pay',this)" id="kfPay">💸 दी</button>
+    <button class="fbtn" onclick="setKF('today',this)" id="kfToday">आज</button>
+  </div>
+  <div id="khataTitle" style="font-size:12px;font-weight:800;color:#ffca28;margin-bottom:8px;text-transform:uppercase;"></div>
+  <div id="khataList"></div>
+</div>
+
+<!-- TAB 3: STOCK -->
+<div class="tc" id="tc3">
+  <div class="sg3" id="stockStats"></div>
+  <div id="stockTitle" style="font-size:12px;font-weight:800;color:#ffca28;margin-bottom:8px;text-transform:uppercase;">📦 Stock List</div>
+  <div id="stockList"></div>
+</div>
+
+<!-- TAB 4: REPORT -->
+<div class="tc" id="tc4">
+  <input type="month" id="monPicker" onchange="renderReport()" style="margin-bottom:12px;">
+  <div class="sg2" id="repStats"></div>
+  <div id="repActions" style="display:none;margin-bottom:12px;">
+    <div style="display:flex;gap:8px;">
+      <button onclick="shareReportWA()" style="flex:1;background:linear-gradient(135deg,#25d366,#128c7e);border:none;border-radius:10px;padding:11px;color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;">📱 WhatsApp</button>
+      <button onclick="window.print()" style="flex:1;background:linear-gradient(135deg,#448aff,#1565c0);border:none;border-radius:10px;padding:11px;color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;">🖨️ Print</button>
+    </div>
+  </div>
+  <div id="repTitle" style="font-size:12px;font-weight:800;color:#ffca28;margin-bottom:8px;text-transform:uppercase;"></div>
+  <div id="repList"></div>
+</div>
+
+</div><!-- /main -->
+
+<div class="toast" id="toast"></div>
+
+<!-- ADD/EDIT TRANSACTION MODAL -->
+<div class="modal" id="txnMod">
+  <div class="mbg" onclick="closeModal('txnMod')"></div>
+  <div class="mbox">
+    <div class="mhandle"></div>
+    <div class="mtitle" id="txnTitle">नया लेन-देन</div>
+    <!-- TYPE BUTTONS -->
+    <div class="type-grid">
+      <button class="tbtn tbtn-sell" id="tbSell" onclick="setType('sell')"><span style="font-size:18px;">🛒</span><span id="lblSell">माल बेचा</span></button>
+      <button class="tbtn tbtn-buy" id="tbBuy" onclick="setType('buy')"><span style="font-size:18px;">📦</span><span id="lblBuy">माल खरीदा</span></button>
+      <button class="tbtn tbtn-recv" id="tbRecv" onclick="setType('receive')"><span style="font-size:18px;">💰</span><span id="lblRecv">पैसे मिले</span></button>
+      <button class="tbtn tbtn-pay" id="tbPay" onclick="setType('pay')"><span style="font-size:18px;">💸</span><span id="lblPay">पैसे दिए</span></button>
+    </div>
+    <!-- PARTY -->
+    <div style="position:relative;">
+      <input id="tParty" placeholder="👤 Party / नाम *" autocomplete="off"
+        oninput="showSug(this.value)" onfocus="showSug(this.value)"
+        onblur="setTimeout(function(){hideSug()},200)">
+      <div id="sugBox" class="sugbox" style="display:none;"></div>
+    </div>
+    <button onclick="pickContact()" style="width:100%;background:linear-gradient(135deg,#00b0ff,#0091ea);border:none;border-radius:10px;padding:11px;color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:10px;" id="contactBtn">👤 Contact List से चुनें</button>
+    <div class="frow">
+      <input id="tMob" type="tel" maxlength="10" placeholder="📞 Mobile">
+      <input id="tVil" placeholder="🏘️ गांव/शहर">
+    </div>
+    <!-- GOODS FIELDS -->
+    <div id="goodsSec" style="display:none;">
+      <div style="font-size:12px;font-weight:800;color:#ff6d00;margin-bottom:8px;text-transform:uppercase;">📦 माल की जानकारी</div>
+      <div id="itemLines"></div>
+      <div class="frow">
+        <input id="iName" placeholder="माल का नाम *" style="margin:0;" list="stSug"><datalist id="stSug"></datalist>
+        <input id="iQty" type="number" placeholder="Qty" style="margin:0;" oninput="calcItem()">
+        <input id="iUnit" placeholder="Unit" style="margin:0;max-width:65px;">
+      </div>
+      <div class="frow" style="margin-top:8px;">
+        <input id="iRate" type="number" placeholder="Rate ₹" style="margin:0;" oninput="calcItem()">
+        <input id="iAmt" type="number" placeholder="Amount ₹ *" style="margin:0;">
+      </div>
+      <div class="ibox ibox-orange" id="calcBox" style="margin-top:8px;"></div>
+      <button onclick="addItem()" style="width:100%;background:var(--surface);border:1px dashed #ff6d00;border-radius:8px;padding:9px;color:#ff6d00;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin:8px 0;" id="addItemBtn">➕ और माल जोड़ें</button>
+      <div class="ibox ibox-orange" id="totalBox"></div>
+    </div>
+    <!-- AMOUNT (receive/pay) -->
+    <div id="amtSec">
+      <input id="tAmt" type="number" placeholder="💰 राशि (₹) *" min="0.01">
+    </div>
+    <!-- PAYMENT for goods -->
+    <div id="paidSec" style="display:none;">
+      <input id="tPaid" type="number" placeholder="✅ Payment दिया/लिया (₹)" min="0" oninput="calcBal()">
+      <div class="ibox" id="balBox"></div>
+    </div>
+    <input id="tNote" placeholder="📝 नोट (optional)" maxlength="200">
+    <input id="tDate" type="date">
+    <button class="save-btn" onclick="saveTxn()" id="saveTxnBtn">✅ सेव करें</button>
+    <button class="cnl-btn" onclick="closeModal('txnMod')">रद्द करें</button>
+  </div>
+</div>
+
+<!-- PARTY DETAIL MODAL -->
+<div class="modal" id="partyMod">
+  <div class="mbg" onclick="closeModal('partyMod')"></div>
+  <div class="mbox">
+    <div class="mhandle"></div>
+    <div id="partyContent"></div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal" id="editMod">
+  <div class="mbg" onclick="closeModal('editMod')"></div>
+  <div class="mbox">
+    <div class="mhandle"></div>
+    <div class="mtitle">✏️ एंट्री बदलें</div>
+    <input type="hidden" id="eId">
+    <input id="eName" placeholder="Party *">
+    <input id="eMob" type="tel" maxlength="10" placeholder="📞 Mobile">
+    <!-- Simple amount (receive/pay) -->
+    <div id="eAmtDiv">
+      <input id="eAmt" type="number" placeholder="💰 राशि *">
+    </div>
+    <!-- Goods items (sell/buy) -->
+    <div id="eItemsDiv" style="display:none;">
+      <div style="font-size:11px;font-weight:800;color:#ff6d00;margin-bottom:6px;text-transform:uppercase;">📦 Items</div>
+      <div id="eItemsList"></div>
+      <div style="font-size:13px;font-weight:700;color:#ffca28;padding:8px;background:var(--surface);border-radius:8px;margin-bottom:8px;" id="eTotalShow"></div>
+      <input id="ePaid" type="number" placeholder="✅ कितने पैसे दिए/मिले (₹)" oninput="calcEditBal()">
+      <div id="eBalShow" style="font-size:13px;font-weight:700;padding:8px;border-radius:8px;margin-bottom:8px;display:none;"></div>
+    </div>
+    <input id="eNote" placeholder="📝 नोट">
+    <input id="eDate" type="date">
+    <button class="save-btn" onclick="saveEdit()">✅ Update करें</button>
+    <button class="cnl-btn" onclick="closeModal('editMod')">रद्द</button>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM -->
+<div class="modal" id="delMod">
+  <div class="mbg" onclick="closeModal('delMod')"></div>
+  <div class="mbox" style="text-align:center;">
+    <div class="mhandle"></div>
+    <div style="font-size:38px;margin:8px 0;">🗑️</div>
+    <div class="mtitle">Delete करें?</div>
+    <div style="color:var(--muted);font-size:13px;margin-bottom:16px;">एक बार delete होने पर वापस नहीं आएगा</div>
+    <button class="save-btn" style="background:linear-gradient(135deg,#ff1744,#c62828);" onclick="confirmDel()">🗑️ हाँ Delete करें</button>
+    <button class="cnl-btn" onclick="closeModal('delMod')">रद्द करें</button>
+  </div>
+</div>
+
+<!-- SHOP MODAL -->
+<div class="modal" id="shopMod">
+  <div class="mbg" onclick="closeModal('shopMod')"></div>
+  <div class="mbox">
+    <div class="mhandle"></div>
+    <div class="mtitle" id="shopModT">🏪 दुकान जानकारी</div>
+    <input id="shName" placeholder="दुकान का नाम">
+    <input id="shAddr" placeholder="पता, गांव, शहर">
+    <input id="shPhone" type="tel" placeholder="फोन नंबर">
+    <input id="shGST" placeholder="GST नंबर (optional)">
+    <button class="save-btn" onclick="saveShop()">✅ Save करें</button>
+    <button class="cnl-btn" onclick="closeModal('shopMod')">रद्द</button>
+  </div>
+</div>
+
+<!-- PIN MODAL -->
+<div class="modal" id="pinMod">
+  <div class="mbg" onclick="closeModal('pinMod')"></div>
+  <div class="mbox">
+    <div class="mhandle"></div>
+    <div class="mtitle">🔐 PIN बदलें</div>
+    <input id="newPin" type="number" placeholder="नया 4 अंकों का PIN">
+    <input id="cfmPin" type="number" placeholder="PIN दोबारा डालें">
+    <button class="save-btn" onclick="savePin()">✅ Save करें</button>
+    <button class="cnl-btn" onclick="closeModal('pinMod')">रद्द</button>
+  </div>
+</div>
+
+<!-- LANGUAGE MODAL -->
+<div class="modal" id="langMod">
+  <div class="mbg" onclick="closeModal('langMod')"></div>
+  <div class="mbox">
+    <div class="mhandle"></div>
+    <div class="mtitle">🌐 भाषा / Language</div>
+    <div class="lang-grid" id="langGrid"></div>
+    <button class="cnl-btn" style="margin-top:12px;" onclick="closeModal('langMod')">बंद करें</button>
+  </div>
+</div>
+
+<!-- BACKUP MODAL -->
+<div class="modal" id="bkpMod">
+  <div class="mbg" onclick="closeModal('bkpMod')"></div>
+  <div class="mbox">
+    <div class="mhandle"></div>
+    <div class="mtitle">📤 Backup</div>
+    <textarea id="bkpData" style="height:80px;font-size:11px;font-family:monospace;" readonly></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button style="flex:1;background:linear-gradient(135deg,#25d366,#128c7e);border:none;border-radius:10px;padding:12px;color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;" onclick="shareWA()">📱 WhatsApp</button>
+      <button style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;" onclick="copyBkp()">📋 Copy</button>
+      <button style="flex:1;background:linear-gradient(135deg,#448aff,#1565c0);border:none;border-radius:10px;padding:12px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;" onclick="dlBkp()">⬇️ File</button>
+    </div>
+    <button class="cnl-btn" style="margin-top:8px;" onclick="closeModal('bkpMod')">बंद करें</button>
+  </div>
+</div>
+
+<!-- BILL MODAL -->
+<div class="modal" id="billMod">
+  <div class="mbg" onclick="closeModal('billMod')"></div>
+  <div class="mbox" id="billContent" style="padding-bottom:20px;">
+    <div class="mhandle"></div>
+    <div id="billBody"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button onclick="printBill()" style="flex:1;background:linear-gradient(135deg,#448aff,#1565c0);border:none;border-radius:10px;padding:12px;color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;">🖨️ Print</button>
+      <button onclick="shareBillWA()" style="flex:1;background:linear-gradient(135deg,#25d366,#128c7e);border:none;border-radius:10px;padding:12px;color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;">📱 WhatsApp</button>
+      <button onclick="closeModal('billMod')" style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--muted);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;">बंद</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLEAR DATA MODAL -->
+<div class="modal" id="clearMod">
+  <div class="mbg" onclick="closeModal('clearMod')"></div>
+  <div class="mbox" style="text-align:center;">
+    <div class="mhandle"></div>
+    <div style="font-size:42px;margin:8px 0;">⚠️</div>
+    <div class="mtitle" style="color:#ff1744;">सारा Data Delete होगा!</div>
+    <div style="background:rgba(255,23,68,0.1);border:1px solid #ff1744;border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px;color:#ff1744;font-weight:700;">
+      ⚠️ पहले Backup लें!<br>
+      <span style="font-size:12px;font-weight:400;color:var(--muted);">एक बार delete होने पर वापस नहीं आएगा</span>
+    </div>
+    <button onclick="doBackup()" style="width:100%;background:linear-gradient(135deg,#25d366,#128c7e);border:none;border-radius:10px;padding:12px;color:#fff;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:8px;">📤 पहले Backup करें</button>
+    <button onclick="doClearAll()" style="width:100%;background:linear-gradient(135deg,#ff1744,#c62828);border:none;border-radius:10px;padding:12px;color:#fff;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:8px;">🗑️ हाँ, सब Delete करें</button>
+    <button class="cnl-btn" onclick="closeModal('clearMod')">रद्द करें</button>
+  </div>
+</div>
+
+<!-- MY NUMBER MODAL -->
+<div class="modal" id="myNumMod">
+  <div class="mbg" onclick="closeModal('myNumMod')"></div>
+  <div class="mbox">
+    <div class="mhandle"></div>
+    <div class="mtitle">📱 My Mobile Number</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">यह नंबर WhatsApp backup के लिए उपयोग होगा</div>
+    <div style="position:relative;">
+      <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--muted);font-weight:700;margin-top:-5px;">+91</span>
+      <input id="myNumIn" type="tel" maxlength="10" placeholder="10 अंकों का नंबर" style="padding-left:52px;font-size:18px;font-weight:700;letter-spacing:2px;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+    </div>
+    <button class="save-btn" onclick="saveMyNum()">✅ Save करें</button>
+    <button class="cnl-btn" onclick="closeModal('myNumMod')">रद्द</button>
+  </div>
+</div>
+
+<!-- WA PARSE MODAL -->
+<div class="modal" id="waParseMod">
+  <div class="mbg" onclick="closeModal('waParseMod')"></div>
+  <div class="mbox">
+    <div class="mhandle"></div>
+    <div class="mtitle">📲 WhatsApp से Entry</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">WhatsApp message यहाँ paste करो — नाम और राशि auto detect होगी</div>
+    <textarea id="waTxt" style="height:110px;font-size:13px;" placeholder="जैसे: Ramesh se 5000 mile aaj, ya Suresh ko 2000 diye"></textarea>
+    <button class="save-btn" onclick="parseWA()">🔍 पहचानो और Form भरो</button>
+    <button class="cnl-btn" onclick="closeModal('waParseMod')">रद्द</button>
+  </div>
+</div>
+
+<!-- DUE DATE MODAL -->
+<div class="modal" id="dueMod">
+  <div class="mbg" onclick="closeModal('dueMod')"></div>
+  <div class="mbox">
+    <div class="mhandle"></div>
+    <div class="mtitle">🔔 Due Date Reminder</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">तारीखें डालो (comma से अलग करो, जैसे: 5,10,25)</div>
+    <input id="dueIn" placeholder="5,10,25">
+    <button class="save-btn" onclick="saveDue()">✅ Save करें</button>
+    <button class="cnl-btn" onclick="closeModal('dueMod')">रद्द</button>
+  </div>
+</div>
+
+<!-- RESTORE MODAL -->
+<div class="modal" id="restoreMod">
+  <div class="mbg" onclick="closeModal('restoreMod')"></div>
+  <div class="mbox">
+    <div class="mhandle"></div>
+    <div class="mtitle">📥 Restore</div>
+    <textarea id="restTxt" style="height:120px;font-size:13px;" placeholder="WhatsApp backup यहाँ paste करो..."></textarea>
+    <button class="save-btn" onclick="doRestore()">✅ Restore करें</button>
+    <button class="cnl-btn" onclick="closeModal('restoreMod')">रद्द</button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+// LANGUAGE SYSTEM
+// ════════════════════════════════════════
+var L={
+  hi:{sell:'माल बेचा',buy:'माल खरीदा',recv:'पैसे मिले',pay:'पैसे दिए',
+    dash:'Dashboard',parties:'Parties',khata:'Khata',stock:'Stock',report:'Report',
+    toRecv:'लेनी है',toPay:'देनी है',totalSell:'बिक्री',totalBuy:'खरीद',
+    todayHis:'आज का हिसाब',noToday:'आज कोई entry नहीं',
+    addBtn:'+ जोड़ें',save:'✅ सेव करें',cancel:'रद्द करें',
+    partyLbl:'👤 Party / नाम *',mobLbl:'📞 Mobile',vilLbl:'🏘️ गांव/शहर',
+    noteLbl:'📝 नोट (optional)',amtLbl:'💰 राशि (₹) *',paidLbl:'✅ कितने पैसे दिए/मिले (₹)',
+    itName:'माल का नाम *',itQty:'Qty',itUnit:'Unit',itRate:'Rate ₹',itAmt:'Amount ₹ *',
+    addMore:'➕ और माल जोड़ें',contact:'👤 Contact List से चुनें',
+    weGet:'हमें मिलने हैं',weGive:'हमें देने हैं',settled:'बराबर',
+    shopInfo:'दुकान जानकारी',pinChg:'PIN बदलें',theme:'Theme',
+    backup:'Backup',restore:'Restore',clear:'Data साफ करें',
+    stockList:'📦 Stock List',noStock:'कोई stock नहीं<br>माल खरीदने पर auto होगा',
+    items:'Items',stockVal:'Stock Value',lowStock:'Low Stock',
+    allPar:'सभी',customers:'💰 लेनी है',suppliers:'💸 देनी है',
+    allTxn:'सभी',today:'आज',langN:'हिंदी',
+    balDue:'⚠️ बाकी',paid:'✅ चुकाया',
+    parties_ov:'Parties',noDue:'कोई बाकी नहीं 👍',
+    paidFull:'✅ पूरा चुकाया!',history:'पूरा इतिहास',
+    del:'Delete करें?',delMsg:'एक बार delete होने पर वापस नहीं आएगा',
+    themeLight:'Light Mode',themeDark:'Dark Mode',themeChg:'Theme बदलें'},
+  en:{sell:'Goods Sold',buy:'Goods Purchased',recv:'Money Received',pay:'Money Paid',
+    dash:'Dashboard',parties:'Parties',khata:'Ledger',stock:'Stock',report:'Report',
+    toRecv:'To Receive',toPay:'To Pay',totalSell:'Sales',totalBuy:'Purchase',
+    todayHis:"Today's Account",noToday:'No entries today',
+    addBtn:'+ Add',save:'✅ Save',cancel:'Cancel',
+    partyLbl:'👤 Party / Name *',mobLbl:'📞 Mobile',vilLbl:'🏘️ Village/City',
+    noteLbl:'📝 Note (optional)',amtLbl:'💰 Amount (₹) *',paidLbl:'✅ Payment Given/Received (₹)',
+    itName:'Item Name *',itQty:'Qty',itUnit:'Unit',itRate:'Rate ₹',itAmt:'Amount ₹ *',
+    addMore:'➕ Add More Items',contact:'👤 Pick from Contacts',
+    weGet:'To Receive',weGive:'To Pay',settled:'Settled',
+    shopInfo:'Shop Info',pinChg:'Change PIN',theme:'Theme',
+    backup:'Backup',restore:'Restore',clear:'Clear Data',
+    stockList:'📦 Stock List',noStock:'No stock yet\nStock auto-updates on purchase',
+    items:'Items',stockVal:'Stock Value',lowStock:'Low Stock',
+    allPar:'All',customers:'💰 To Receive',suppliers:'💸 To Pay',
+    allTxn:'All',today:'Today',langN:'English',
+    balDue:'⚠️ Balance Due',paid:'✅ Paid',
+    parties_ov:'Parties',noDue:'All settled 👍',
+    paidFull:'✅ Fully Paid!',history:'Full History',
+    del:'Delete?',delMsg:'This cannot be undone',
+    themeLight:'Light Mode',themeDark:'Dark Mode',themeChg:'Change Theme'},
+  mr:{sell:'माल विकला',buy:'माल खरेदी',recv:'Payment आली',pay:'Payment दिली',
+    dash:'डॅशबोर्ड',parties:'पार्ट्या',khata:'खाता',stock:'स्टॉक',report:'अहवाल',
+    toRecv:'घ्यायचे',toPay:'द्यायचे',totalSell:'विक्री',totalBuy:'खरेदी',
+    todayHis:'आजचा हिशोब',noToday:'आज नोंद नाही',
+    addBtn:'+ जोडा',save:'✅ सेव्ह करा',cancel:'रद्द',langN:'मराठी',
+    partyLbl:'👤 पार्टी / नाव *',mobLbl:'📞 मोबाईल',vilLbl:'🏘️ गाव/शहर',
+    noteLbl:'📝 नोंद',amtLbl:'💰 रक्कम (₹) *',paidLbl:'✅ Payment (₹)',
+    itName:'मालाचे नाव *',itQty:'प्रमाण',itUnit:'युनिट',itRate:'दर ₹',itAmt:'रक्कम ₹ *',
+    addMore:'➕ आणखी माल',contact:'👤 Contact वरून',weGet:'घ्यायचे',weGive:'द्यायचे',
+    settled:'चुकता',shopInfo:'दुकान माहिती',pinChg:'PIN बदला',
+    backup:'बॅकअप',restore:'रिस्टोर',clear:'डेटा साफ',
+    stockList:'📦 स्टॉक यादी',noStock:'स्टॉक नाही',items:'वस्तू',stockVal:'किंमत',
+    lowStock:'कमी स्टॉक',allPar:'सर्व',today:'आज',allTxn:'सर्व',
+    balDue:'⚠️ बाकी',paid:'✅ चुकता',parties_ov:'Parties',noDue:'बाकी नाही 👍',
+    paidFull:'✅ पूर्ण!',history:'इतिहास',del:'Delete?',delMsg:'पुन्हा येणार नाही',
+    themeLight:'Light Mode',themeDark:'Dark Mode',themeChg:'Theme'},
+  gu:{sell:'માલ વેચ્યો',buy:'માલ ખરીદ્યો',recv:'Payment આવી',pay:'Payment આપી',
+    dash:'ડેશ',parties:'પાર્ટી',khata:'ખાતું',stock:'સ્ટોક',report:'રિપોર્ટ',
+    toRecv:'લેવાના',toPay:'આપવાના',totalSell:'વેચાણ',totalBuy:'ખરીદી',
+    todayHis:'આજનો હિસાબ',noToday:'આજ Entry નથી',addBtn:'+ ઉમેરો',
+    save:'✅ સેવ',cancel:'રદ',langN:'ગુજરાતી',
+    partyLbl:'👤 Party *',mobLbl:'📞 Mobile',vilLbl:'🏘️ ગામ/શહેર',
+    noteLbl:'📝 નોંધ',amtLbl:'💰 રકમ (₹) *',paidLbl:'✅ Payment (₹)',
+    itName:'માલ *',itQty:'Qty',itUnit:'Unit',itRate:'Rate',itAmt:'Amount *',
+    addMore:'➕ વધુ',contact:'👤 Contact',weGet:'લેવાના',weGive:'આપવાના',
+    settled:'Settled',shopInfo:'દુકાન',pinChg:'PIN',backup:'Backup',restore:'Restore',
+    clear:'Clear',stockList:'📦 Stock',noStock:'Stock નથી',items:'Items',
+    stockVal:'Value',lowStock:'Low',allPar:'બધા',today:'આજ',allTxn:'બધા',
+    balDue:'⚠️ બાકી',paid:'✅ ચૂક્યો',parties_ov:'Parties',noDue:'સ્ SettledII 👍',
+    paidFull:'✅ ચૂક્યો!',history:'ઇતિહાસ',del:'Delete?',delMsg:'ઉલટાવી શકાશે નહીં',
+    themeLight:'Light',themeDark:'Dark',themeChg:'Theme'},
+  pa:{sell:'ਮਾਲ ਵੇਚਿਆ',buy:'ਮਾਲ ਖਰੀਦਿਆ',recv:'Payment ਆਈ',pay:'Payment ਦਿੱਤੀ',
+    dash:'Dashboard',parties:'ਪਾਰਟੀਆਂ',khata:'ਖਾਤਾ',stock:'ਸਟਾਕ',report:'ਰਿਪੋਰਟ',
+    toRecv:'ਲੈਣੀ ਹੈ',toPay:'ਦੇਣੀ ਹੈ',totalSell:'ਵਿਕਰੀ',totalBuy:'ਖਰੀਦ',
+    todayHis:'ਅੱਜ ਦਾ ਹਿਸਾਬ',noToday:'ਅੱਜ ਕੋਈ entry ਨਹੀਂ',addBtn:'+ ਜੋੜੋ',
+    save:'✅ ਸੇਵ',cancel:'ਰੱਦ',langN:'ਪੰਜਾਬੀ',
+    partyLbl:'👤 Party *',mobLbl:'📞 Mobile',vilLbl:'🏘️ ਪਿੰਡ/ਸ਼ਹਿਰ',
+    noteLbl:'📝 ਨੋਟ',amtLbl:'💰 ਰਕਮ (₹) *',paidLbl:'✅ Payment (₹)',
+    itName:'ਮਾਲ *',itQty:'Qty',itUnit:'Unit',itRate:'Rate',itAmt:'Amount *',
+    addMore:'➕ ਹੋਰ',contact:'👤 Contact',weGet:'ਲੈਣੀ',weGive:'ਦੇਣੀ',
+    settled:'Settled',shopInfo:'ਦੁਕਾਨ',pinChg:'PIN',backup:'Backup',restore:'Restore',
+    clear:'Clear',stockList:'📦 Stock',noStock:'ਕੋਈ stock ਨਹੀਂ',items:'Items',
+    stockVal:'Value',lowStock:'Low',allPar:'ਸਾਰੇ',today:'ਅੱਜ',allTxn:'ਸਾਰੇ',
+    balDue:'⚠️ ਬਾਕੀ',paid:'✅ ਚੁਕਾਇਆ',parties_ov:'Parties',noDue:'ਕੋਈ ਬਾਕੀ ਨਹੀਂ 👍',
+    paidFull:'✅ ਪੂਰਾ!',history:'ਇਤਿਹਾਸ',del:'Delete?',delMsg:'ਵਾਪਸ ਨਹੀਂ ਆਵੇਗਾ',
+    themeLight:'Light',themeDark:'Dark',themeChg:'Theme'},
+  ta:{sell:'பொருள் விற்றது',buy:'பொருள் வாங்கியது',recv:'Payment வந்தது',pay:'Payment கொடுத்தது',
+    dash:'Dashboard',parties:'பார்ட்டிகள்',khata:'கணக்கு',stock:'ஸ்டாக்',report:'அறிக்கை',
+    toRecv:'வாங்க வேண்டும்',toPay:'கொடுக்க வேண்டும்',totalSell:'விற்பனை',totalBuy:'வாங்குதல்',
+    todayHis:'இன்றைய கணக்கு',noToday:'இன்று entry இல்லை',addBtn:'+ சேர்',
+    save:'✅ சேமி',cancel:'ரத்து',langN:'தமிழ்',
+    partyLbl:'👤 Party *',mobLbl:'📞 Mobile',vilLbl:'🏘️ கிராமம்',
+    noteLbl:'📝 குறிப்பு',amtLbl:'💰 தொகை (₹) *',paidLbl:'✅ Payment (₹)',
+    itName:'பொருள் *',itQty:'அளவு',itUnit:'Unit',itRate:'விலை',itAmt:'தொகை *',
+    addMore:'➕ மேலும்',contact:'👤 Contact',weGet:'வாங்க',weGive:'கொடுக்க',
+    settled:'தீர்ந்தது',shopInfo:'கடை',pinChg:'PIN',backup:'Backup',restore:'Restore',
+    clear:'Clear',stockList:'📦 Stock',noStock:'Stock இல்லை',items:'Items',
+    stockVal:'மதிப்பு',lowStock:'குறைவு',allPar:'அனைத்தும்',today:'இன்று',allTxn:'அனைத்தும்',
+    balDue:'⚠️ மீதி',paid:'✅ செலுத்தியது',parties_ov:'Parties',noDue:'எதுவும் மீதி இல்லை 👍',
+    paidFull:'✅ முழுவதும்!',history:'வரலாறு',del:'Delete?',delMsg:'திரும்பாது',
+    themeLight:'Light',themeDark:'Dark',themeChg:'Theme'},
+  te:{sell:'వస్తువు అమ్మారు',buy:'వస్తువు కొన్నారు',recv:'Payment వచ్చింది',pay:'Payment ఇచ్చారు',
+    dash:'Dashboard',parties:'పార్టీలు',khata:'ఖాతా',stock:'స్టాక్',report:'నివేదిక',
+    toRecv:'తీసుకోవాలి',toPay:'ఇవ్వాలి',totalSell:'అమ్మకం',totalBuy:'కొనుగోలు',
+    todayHis:'ఈరోజు లెక్క',noToday:'ఈరోజు ఎంట్రీ లేదు',addBtn:'+ జోడించు',
+    save:'✅ సేవ్',cancel:'రద్దు',langN:'తెలుగు',
+    partyLbl:'👤 Party *',mobLbl:'📞 Mobile',vilLbl:'🏘️ గ్రామం',
+    noteLbl:'📝 నోట్',amtLbl:'💰 మొత్తం (₹) *',paidLbl:'✅ Payment (₹)',
+    itName:'వస్తువు *',itQty:'Qty',itUnit:'Unit',itRate:'రేటు',itAmt:'Amount *',
+    addMore:'➕ మరిన్ని',contact:'👤 Contact',weGet:'తీసుకోవాలి',weGive:'ఇవ్వాలి',
+    settled:'Settled',shopInfo:'షాప్',pinChg:'PIN',backup:'Backup',restore:'Restore',
+    clear:'Clear',stockList:'📦 Stock',noStock:'Stock లేదు',items:'Items',
+    stockVal:'విలువ',lowStock:'తక్కువ',allPar:'అన్నీ',today:'ఈరోజు',allTxn:'అన్నీ',
+    balDue:'⚠️ బాకీ',paid:'✅ చెల్లించారు',parties_ov:'Parties',noDue:'ఏమీ బాకీ లేదు 👍',
+    paidFull:'✅ పూర్తి!',history:'చరిత్ర',del:'Delete?',delMsg:'వెనక్కి రాదు',
+    themeLight:'Light',themeDark:'Dark',themeChg:'Theme'},
+  bn:{sell:'পণ্য বিক্রি',buy:'পণ্য কেনা',recv:'Payment এসেছে',pay:'Payment দিয়েছি',
+    dash:'Dashboard',parties:'পার্টি',khata:'খাতা',stock:'স্টক',report:'রিপোর্ট',
+    toRecv:'নিতে হবে',toPay:'দিতে হবে',totalSell:'বিক্রি',totalBuy:'কেনা',
+    todayHis:'আজকের হিসাব',noToday:'আজ কোনো entry নেই',addBtn:'+ যোগ করুন',
+    save:'✅ সেভ',cancel:'বাতিল',langN:'বাংলা',
+    partyLbl:'👤 Party *',mobLbl:'📞 Mobile',vilLbl:'🏘️ গ্রাম/শহর',
+    noteLbl:'📝 নোট',amtLbl:'💰 পরিমাণ (₹) *',paidLbl:'✅ Payment (₹)',
+    itName:'পণ্য *',itQty:'Qty',itUnit:'Unit',itRate:'দর',itAmt:'Amount *',
+    addMore:'➕ আরো',contact:'👤 Contact',weGet:'নিতে হবে',weGive:'দিতে হবে',
+    settled:'নিষ্পত্তি',shopInfo:'দোকান',pinChg:'PIN',backup:'Backup',restore:'Restore',
+    clear:'Clear',stockList:'📦 Stock',noStock:'Stock নেই',items:'Items',
+    stockVal:'মূল্য',lowStock:'কম',allPar:'সবাই',today:'আজ',allTxn:'সবাই',
+    balDue:'⚠️ বাকি',paid:'✅ দেওয়া',parties_ov:'Parties',noDue:'কোনো বাকি নেই 👍',
+    paidFull:'✅ পূর্ণ!',history:'ইতিহাস',del:'Delete?',delMsg:'ফেরত আসবে না',
+    themeLight:'Light',themeDark:'Dark',themeChg:'Theme'}
+};
+var lang='hi';
+function t(k){return (L[lang]&&L[lang][k])||L.hi[k]||k;}
+
+// ════════════════════════════════════════
+// DATA
+// ════════════════════════════════════════
+var ES='nds_data_v1',CS='nds_cfg_v1',SS='nds_stock_v1';
+var entries=[],stock={};
+var cfg={shopName:'Khata Bhai',shopAddr:'',shopPhone:'',shopGST:'',
+  pin:'1234',theme:'dark',lang:'hi',registered:false,
+  ownerMobile:'',dueDates:[]};
+
+function loadData(){
+  try{var d=localStorage.getItem(ES);if(d)entries=JSON.parse(d);}catch(e){entries=[];}
+  try{var c=localStorage.getItem(CS);if(c)cfg=Object.assign(cfg,JSON.parse(c));}catch(e){}
+  try{var s=localStorage.getItem(SS);if(s)stock=JSON.parse(s);}catch(e){stock={};}
+  if(!cfg.registered&&entries.length>0)cfg.registered=true;
+  lang=cfg.lang||'hi';
+  buildNames();
+}
+function saveData(){
+  try{
+    localStorage.setItem(ES,JSON.stringify(entries));
+    localStorage.setItem(CS,JSON.stringify(cfg));
+    localStorage.setItem(SS,JSON.stringify(stock));
+  }catch(e){toast('❗ Save failed');}
+}
+
+// ════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════
+function fmt(n){return '₹'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2});}
+function fq(n,u){return (n||0)+(u?' '+u:'');}
+function fd(d){
+  if(!d)return '';
+  var M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var p=d.split('-');return p[2]+' '+M[+p[1]-1]+' '+p[0];
+}
+function tod(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function tmon(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1);}
+function pad(n){return String(n).padStart(2,'0');}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function toast(msg){
+  var el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(el._t);el._t=setTimeout(function(){el.classList.remove('show');},2500);
+}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// ════════════════════════════════════════
+// TYPE ICONS & COLORS
+// ════════════════════════════════════════
+function tIco(tp){return {sell:'🛒',buy:'📦',receive:'💰',pay:'💸',in:'⬆️',out:'⬇️',maal:'📦'}[tp]||'📋';}
+function tLbl(tp){return {sell:t('sell'),buy:t('buy'),receive:t('recv'),pay:t('pay'),in:t('recv'),out:t('pay'),maal:t('buy')}[tp]||tp;}
+function tClr(tp){return {sell:'#00e676',buy:'#ff6d00',receive:'#448aff',pay:'#ff1744',in:'#00e676',out:'#ff1744',maal:'#ff6d00'}[tp]||'#ffca28';}
+function isGoods(tp){return tp==='sell'||tp==='buy'||tp==='maal';}
+
+// ════════════════════════════════════════
+// BALANCE
+// ════════════════════════════════════════
+function getBalance(name){
+  var b=0;
+  entries.forEach(function(e){
+    if(e.name!==name)return;
+    if(e.type==='sell')b+=(e.amount-(e.paid||0));
+    else if(e.type==='buy')b-=(e.amount-(e.paid||0));
+    else if(e.type==='receive'||e.type==='in')b-=e.amount;
+    else if(e.type==='pay'||e.type==='out')b+=e.amount;
+    else if(e.type==='maal')b-=(e.amount-(e.paid||0));
+  });
+  return b;
+}
+function getAllParties(){
+  var m={};
+  entries.forEach(function(e){
+    if(!m[e.name])m[e.name]={name:e.name,mobile:e.mobile||'',village:e.village||''};
+    if(e.mobile&&!m[e.name].mobile)m[e.name].mobile=e.mobile;
+  });
+  return Object.values(m);
+}
+
+// ════════════════════════════════════════
+// STOCK
+// ════════════════════════════════════════
+function updStock(items,tp){
+  if(!items||!items.length)return;
+  items.forEach(function(it){
+    var n=(it.name||'').trim();if(!n)return;
+    if(!stock[n])stock[n]={qty:0,avgRate:0,unit:it.unit||''};
+    var q=parseFloat(it.qty)||0,r=parseFloat(it.rate)||0;
+    if(tp==='buy'){
+      var nq=stock[n].qty+q;
+      if(nq>0&&r>0)stock[n].avgRate=((stock[n].qty*stock[n].avgRate)+(q*r))/nq;
+      stock[n].qty=nq;
+      if(it.unit)stock[n].unit=it.unit;
+    }else if(tp==='sell'){
+      stock[n].qty=Math.max(0,(stock[n].qty||0)-q);
+    }
+  });
+}
+function revStock(e){
+  if(!e.items||!e.items.length)return;
+  var rv=e.type==='buy'||e.type==='maal'?'sell':e.type==='sell'?'buy':null;
+  if(rv)updStock(e.items,rv);
+}
+
+// ════════════════════════════════════════
+// PIN
+// ════════════════════════════════════════
+var pe='';
+function pp(n){
+  if(pe.length>=4)return;pe+=n;updDots();
+  if(pe.length===4){
+    if(pe===cfg.pin){document.getElementById('pinScr').classList.add('hide');pe='';}
+    else{
+      document.getElementById('perr').textContent='❌ गलत PIN';
+      setTimeout(function(){pe='';updDots();document.getElementById('perr').textContent='';},800);
+    }
+  }
+}
+function pdel(){if(pe.length>0){pe=pe.slice(0,-1);updDots();}}
+function updDots(){for(var i=0;i<4;i++)document.getElementById('d'+i).classList.toggle('filled',i<pe.length);}
+
+// ════════════════════════════════════════
+// MENU & THEME
+// ════════════════════════════════════════
+function openMenu(){document.getElementById('smenu').classList.add('open');document.getElementById('ovl').classList.add('show');}
+function closeMenu(){document.getElementById('smenu').classList.remove('open');document.getElementById('ovl').classList.remove('show');}
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  cfg.theme=document.body.classList.contains('light')?'light':'dark';
+  document.getElementById('mThemeLbl').textContent=cfg.theme==='light'?t('themeDark'):t('themeLight');
+  saveData();
+}
+
+// ════════════════════════════════════════
+// TABS
+// ════════════════════════════════════════
+var curTab=0;
+var dirty=[true,true,true,true,true];
+function goTab(n){
+  document.querySelectorAll('.tab').forEach(function(t,i){t.classList.toggle('active',i===n);});
+  document.querySelectorAll('.tc').forEach(function(t,i){t.classList.toggle('active',i===n);});
+  curTab=n;
+  if(dirty[n]){renders[n]();dirty[n]=false;}
+}
+function markDirty(){dirty=[true,true,true,true,true];}
+function renderAll(){markDirty();renders[curTab]();dirty[curTab]=false;}
+
+// ════════════════════════════════════════
+// SEARCH
+// ════════════════════════════════════════
+var srchOn=false;
+function toggleSearch(){
+  srchOn=!srchOn;
+  document.getElementById('srchBar').classList.toggle('show',srchOn);
+  if(srchOn)document.getElementById('srchIn').focus();
+  else{document.getElementById('srchIn').value='';renderAll();}
+}
+function doSearch(){
+  var q=document.getElementById('srchIn').value.toLowerCase().trim();
+  if(!q){renderAll();return;}
+  var res=entries.filter(function(e){
+    return (e.name||'').toLowerCase().includes(q)||
+      String(e.amount||'').includes(q)||
+      (e.note||'').toLowerCase().includes(q)||
+      (e.items||[]).some(function(i){return (i.name||'').toLowerCase().includes(q);});
+  });
+  goTab(2);
+  renderKList(res,'🔍 Results ('+res.length+')');
+}
+
+// ════════════════════════════════════════
+// NAME SUGGESTIONS
+// ════════════════════════════════════════
+var allNames=[];
+function buildNames(){allNames=[...new Set(entries.map(function(e){return e.name;}))].sort();}
+function showSug(q){
+  var box=document.getElementById('sugBox');
+  var val=(q||'').trim().toLowerCase();
+  var matches=val?allNames.filter(function(n){return n.toLowerCase().includes(val);}):allNames;
+  if(!matches.length){box.style.display='none';return;}
+  box.innerHTML=matches.slice(0,8).map(function(name){
+    var b=getBalance(name);
+    var bc=b>0?'#ff1744':b<0?'#00e676':'var(--muted)';
+    return '<div class="sugitem" onmousedown="pickSug(\''+name.replace(/'/g,"\\'")+'\')">'+
+      '<span>'+esc(name)+'</span><span style="color:'+bc+';font-size:11px;font-weight:700;">'+fmt(Math.abs(b))+'</span></div>';
+  }).join('');
+  box.style.display='block';
+}
+function hideSug(){document.getElementById('sugBox').style.display='none';}
+function pickSug(name){
+  document.getElementById('tParty').value=name;
+  hideSug();
+  var mob='';for(var i=0;i<entries.length;i++){if(entries[i].name===name&&entries[i].mobile){mob=entries[i].mobile;break;}}
+  var mf=document.getElementById('tMob');if(mf&&mob&&!mf.value)mf.value=mob;
+}
+
+// ════════════════════════════════════════
+// CONTACT PICKER
+// ════════════════════════════════════════
+function cTel(t){return (t||'').replace(/[\s\-\(\)\+]/g,'').replace(/^91(\d{10})$/,'$1').replace(/\D/g,'').slice(-10);}
+async function pickContact(){
+  try{
+    if(!navigator.contacts||!navigator.contacts.select){
+      toast('📱 Contact picker: Android Chrome में खोलें');return;
+    }
+    var cs=await navigator.contacts.select(['name','tel'],{multiple:false});
+    if(!cs||!cs.length)return;
+    var name=((cs[0].name&&cs[0].name[0])||'').trim();
+    var mob=cTel((cs[0].tel&&cs[0].tel[0])||'');
+    if(name)document.getElementById('tParty').value=name;
+    if(mob)document.getElementById('tMob').value=mob;
+    if(name||mob)toast('✅ '+(name||'')+(mob?' • 📞'+mob:''));
+  }catch(err){if(err.name!=='AbortError')toast('❗ Contact access नहीं मिला');}
+}
+
+// ════════════════════════════════════════
+// TRANSACTION FORM
+// ════════════════════════════════════════
+var _type='sell',_items=[];
+
+function openAdd(){
+  _items=[];
+  resetForm();
+  setType('sell');
+  document.getElementById('txnMod').classList.add('open');
+  document.getElementById('txnTitle').textContent=t('sell');
+  setTimeout(function(){document.getElementById('tParty').focus();},300);
+}
+
+function resetForm(){
+  ['tParty','tMob','tVil','tNote','tAmt','tPaid','iName','iQty','iUnit','iRate','iAmt'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('tDate').value=tod();
+  document.getElementById('itemLines').innerHTML='';
+  document.getElementById('calcBox').style.display='none';
+  document.getElementById('totalBox').style.display='none';
+  document.getElementById('balBox').style.display='none';
+}
+
+function setType(tp){
+  _type=tp;
+  ['tbSell','tbBuy','tbRecv','tbPay'].forEach(function(id){
+    document.getElementById(id).classList.remove('sel');
+  });
+  var idMap={sell:'tbSell',buy:'tbBuy',receive:'tbRecv',pay:'tbPay'};
+  if(idMap[tp])document.getElementById(idMap[tp]).classList.add('sel');
+  document.getElementById('txnTitle').textContent=tLbl(tp);
+  var goods=isGoods(tp);
+  document.getElementById('goodsSec').style.display=goods?'block':'none';
+  document.getElementById('amtSec').style.display=goods?'none':'block';
+  document.getElementById('paidSec').style.display=goods?'block':'none';
+  // Stock suggestions for buy
+  if(tp==='sell'||tp==='buy'){
+    var dl=document.getElementById('stSug');
+    dl.innerHTML=Object.keys(stock).map(function(n){return '<option value="'+esc(n)+'">'+esc(n)+'</option>';}).join('');
+  }
+}
+
+function calcItem(){
+  var q=parseFloat(document.getElementById('iQty').value)||0;
+  var r=parseFloat(document.getElementById('iRate').value)||0;
+  var cb=document.getElementById('calcBox');
+  if(q>0&&r>0){
+    var tot=(q*r);
+    document.getElementById('iAmt').value=tot.toFixed(2);
+    cb.textContent='✅ '+q+' × ₹'+r+' = ₹'+tot.toFixed(2);
+    cb.className='ibox ibox-green';cb.style.display='block';
+  }else{cb.style.display='none';}
+}
+
+function addItem(){
+  var name=(document.getElementById('iName').value||'').trim();
+  var qty=parseFloat(document.getElementById('iQty').value)||0;
+  var unit=(document.getElementById('iUnit').value||'').trim();
+  var rate=parseFloat(document.getElementById('iRate').value)||0;
+  var amt=parseFloat(document.getElementById('iAmt').value)||0;
+  if(!name){toast('❗ माल का नाम डालें');return;}
+  if(!amt||amt<=0){toast('❗ Amount डालें');return;}
+  _items.push({name:name,qty:qty,unit:unit,rate:rate,amount:amt});
+  ['iName','iQty','iUnit','iRate','iAmt'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('calcBox').style.display='none';
+  renderItems();
+}
+
+function renderItems(){
+  var tot=_items.reduce(function(s,i){return s+i.amount;},0);
+  document.getElementById('itemLines').innerHTML=_items.map(function(it,idx){
+    return '<div class="item-line">'+
+      '<span class="item-name">'+esc(it.name)+(it.qty?' ('+fq(it.qty,it.unit)+')':'')+(it.rate?' @₹'+it.rate:'')+' = ₹'+it.amount.toFixed(2)+'</span>'+
+      '<button class="item-del" onclick="removeItem('+idx+')">✕</button></div>';
+  }).join('');
+  if(_items.length>0){
+    var tb=document.getElementById('totalBox');
+    tb.textContent='📦 कुल: '+fmt(tot);
+    tb.className='ibox ibox-orange';tb.style.display='block';
+    calcBal();
+  }else{
+    document.getElementById('totalBox').style.display='none';
+  }
+}
+function removeItem(i){_items.splice(i,1);renderItems();}
+
+function calcBal(){
+  var tot=_items.reduce(function(s,i){return s+i.amount;},0);
+  var paid=parseFloat(document.getElementById('tPaid').value)||0;
+  var bal=tot-paid;
+  var bb=document.getElementById('balBox');
+  if(tot>0){
+    if(bal<=0){bb.textContent=t('paidFull');bb.className='ibox ibox-green';}
+    else{bb.textContent='⚠️ '+t('balDue')+': '+fmt(bal);bb.className='ibox ibox-red';}
+    bb.style.display='block';
+  }else{bb.style.display='none';}
+}
+
+function saveTxn(){
+  var party=(document.getElementById('tParty').value||'').trim();
+  if(!party){toast('❗ Party का नाम डालें');return;}
+  var goods=isGoods(_type);
+  var amt,paid=0,bal=0;
+  if(goods){
+    // Auto-add last item if typed
+    var iname=(document.getElementById('iName').value||'').trim();
+    var iamt=parseFloat(document.getElementById('iAmt').value)||0;
+    if(iname&&iamt>0)addItem();
+    if(!_items.length){toast('❗ कम से कम एक माल डालें');return;}
+    amt=_items.reduce(function(s,i){return s+i.amount;},0);
+    paid=parseFloat(document.getElementById('tPaid').value)||0;
+    bal=amt-paid;
+  }else{
+    amt=parseFloat(document.getElementById('tAmt').value)||0;
+    if(!amt||amt<=0){toast('❗ राशि डालें');return;}
+  }
+  var e={
+    id:Date.now(),type:_type,name:party,
+    mobile:(document.getElementById('tMob').value||'').trim(),
+    village:(document.getElementById('tVil').value||'').trim(),
+    amount:amt,paid:paid,balance:bal,
+    items:goods?_items.slice():null,
+    note:(document.getElementById('tNote').value||'').trim(),
+    date:document.getElementById('tDate').value||tod()
+  };
+  if(goods)updStock(_items,_type);
+  entries.unshift(e);
+  buildNames();saveData();
+  closeModal('txnMod');
+  toast('✅ '+party+' — '+fmt(amt)+(bal>0?' | बाकी: '+fmt(bal):''));
+  renderAll();
+}
+
+// ════════════════════════════════════════
+// WHATSAPP - EVERY ENTRY
+// ════════════════════════════════════════
+function shareWAEntry(id){
+  var e=entries.find(function(x){return x.id===id;});
+  if(!e)return;
+  var bal=getBalance(e.name);
+  var balLine=bal>0?'🔴 *बाकी है: '+fmt(bal)+'*':bal<0?'🟢 *हमें देना है: '+fmt(Math.abs(bal))+'*':'🟢 *हिसाब बराबर है*';
+  var typeEmoji={sell:'🛒',buy:'📦',receive:'💵',pay:'💸',in:'💵',out:'💸',maal:'📦'};
+  var typeColor={sell:'माल बेचा 🛒',buy:'माल खरीदा 📦',receive:'पैसे मिले 💵',pay:'पैसे दिए 💸',in:'पैसे मिले 💵',out:'पैसे दिए 💸',maal:'माल खरीदा 📦'};
+
+  var itemsBlock='';
+  if(e.items&&e.items.length){
+    itemsBlock='\n\n📋 *माल की जानकारी:*\n'+'┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄\n'+
+    e.items.map(function(i,idx){
+      return (idx+1)+'. *'+i.name+'*'+(i.qty?'\n   '+i.qty+(i.unit?' '+i.unit:'')+' × ₹'+(i.rate||0)+' = *'+fmt(i.amount)+'*':'\n   *'+fmt(i.amount)+'*');
+    }).join('\n')+'\n'+'┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄';
+  }
+
+  var payBlock='';
+  if(e.paid>0){
+    payBlock='\n✅ Payment मिला: *'+fmt(e.paid)+'*';
+    if((e.balance||0)>0)payBlock+='\n🔴 बाकी: *'+fmt(e.balance)+'*';
+    else payBlock+='\n🟢 पूरा चुकाया!';
+  }
+
+  var msg=
+    '╔══════════════════╗\n'+
+    '║  🏪 *KHATA BHAI NDS*  ║\n'+
+    '╚══════════════════╝\n\n'+
+    (cfg.shopName!=='Khata Bhai'?'*'+cfg.shopName+'*\n':'')+
+    (cfg.shopPhone?'📞 '+cfg.shopPhone+'\n':'')+
+    '\n━━━━━━━━━━━━━━━━━━\n'+
+    '*'+typeColor[e.type]+'*\n'+
+    '━━━━━━━━━━━━━━━━━━\n\n'+
+    '👤 Party: *'+e.name+'*\n'+
+    (e.mobile?'📱 Mobile: '+e.mobile+'\n':'')+
+    (e.village?'🏘️ '+e.village+'\n':'')+
+    itemsBlock+
+    '\n\n💰 *कुल राशि: '+fmt(e.amount)+'*'+
+    payBlock+
+    '\n📅 Date: '+fd(e.date)+
+    (e.note?'\n📝 Note: _'+e.note+'_':'')+
+    '\n\n━━━━━━━━━━━━━━━━━━\n'+
+    balLine+
+    '\n━━━━━━━━━━━━━━━━━━\n'+
+    '_Khata Bhai by NDS_ 📒';
+
+  var url=e.mobile?
+    'https://wa.me/91'+e.mobile+'?text='+encodeURIComponent(msg):
+    'https://api.whatsapp.com/send?text='+encodeURIComponent(msg);
+  window.open(url,'_blank');
+}
+
+// ════════════════════════════════════════
+// DELETE
+// ════════════════════════════════════════
+var _delId=null;
+function askDel(id){_delId=id;openModal('delMod');}
+function confirmDel(){
+  if(!_delId)return;
+  var i=entries.findIndex(function(e){return e.id===_delId;});
+  if(i>=0){revStock(entries[i]);entries.splice(i,1);}
+  _delId=null;buildNames();saveData();closeModal('delMod');toast('🗑️ Deleted');renderAll();
+}
+
+// ════════════════════════════════════════
+// EDIT
+// ════════════════════════════════════════
+var _editItems=[];
+function openEdit(id){
+  var e=entries.find(function(x){return x.id===id;});
+  if(!e){toast('❗ Entry नहीं मिली');return;}
+  _editItems=e.items?JSON.parse(JSON.stringify(e.items)):[];
+
+  document.getElementById('eId').value=id;
+  document.getElementById('eName').value=e.name||'';
+  document.getElementById('eMob').value=e.mobile||'';
+  document.getElementById('eNote').value=e.note||'';
+  document.getElementById('eDate').value=e.date||tod();
+
+  var goods=isGoods(e.type);
+  document.getElementById('eAmtDiv').style.display=goods?'none':'block';
+  document.getElementById('eItemsDiv').style.display=goods?'block':'none';
+
+  if(goods){
+    document.getElementById('ePaid').value=e.paid||'';
+    renderEditItems();
+    calcEditBal();
+  }else{
+    document.getElementById('eAmt').value=e.amount||'';
+  }
+  openModal('editMod');
+}
+
+function renderEditItems(){
+  var tot=_editItems.reduce(function(s,i){return s+i.amount;},0);
+  document.getElementById('eItemsList').innerHTML=_editItems.map(function(it,idx){
+    return '<div style="background:var(--surface);border-radius:8px;padding:10px;margin-bottom:8px;">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'+
+        '<span style="font-weight:700;font-size:13px;">📦 '+esc(it.name)+'</span>'+
+        '<button onclick="removeEditItem('+idx+')" style="background:#ff1744;border:none;border-radius:5px;width:22px;height:22px;color:#fff;cursor:pointer;font-size:11px;">✕</button>'+
+      '</div>'+
+      '<div style="display:flex;gap:6px;">'+
+        '<input type="number" value="'+it.qty+'" placeholder="Qty" style="margin:0;font-size:13px;padding:8px;" onchange="updateEditItem('+idx+',\'qty\',this.value)">'+
+        '<input value="'+esc(it.unit||'')+'" placeholder="Unit" style="margin:0;font-size:13px;padding:8px;max-width:70px;" onchange="updateEditItem('+idx+',\'unit\',this.value)">'+
+        '<input type="number" value="'+it.rate+'" placeholder="Rate" style="margin:0;font-size:13px;padding:8px;" onchange="updateEditItem('+idx+',\'rate\',this.value)">'+
+      '</div>'+
+      '<div style="font-size:12px;font-weight:700;color:#ff6d00;margin-top:5px;">= '+fmt(it.amount)+'</div>'+
+    '</div>';
+  }).join('');
+  document.getElementById('eTotalShow').textContent='📦 कुल माल: '+fmt(tot);
+  calcEditBal();
+}
+
+function updateEditItem(idx,field,val){
+  if(!_editItems[idx])return;
+  _editItems[idx][field]=field==='unit'?val:(parseFloat(val)||0);
+  if(field==='qty'||field==='rate'){
+    var q=_editItems[idx].qty||0;
+    var r=_editItems[idx].rate||0;
+    if(q>0&&r>0)_editItems[idx].amount=q*r;
+  }
+  var tot=_editItems.reduce(function(s,i){return s+i.amount;},0);
+  document.getElementById('eTotalShow').textContent='📦 कुल माल: '+fmt(tot);
+  calcEditBal();
+}
+
+function removeEditItem(idx){
+  _editItems.splice(idx,1);
+  renderEditItems();
+}
+
+function calcEditBal(){
+  var tot=_editItems.reduce(function(s,i){return s+i.amount;},0);
+  var paid=parseFloat(document.getElementById('ePaid').value)||0;
+  var bal=tot-paid;
+  var el=document.getElementById('eBalShow');
+  if(tot>0){
+    el.style.display='block';
+    el.textContent=bal<=0?'✅ पूरा चुकाया!':'⚠️ बाकी: '+fmt(bal);
+    el.style.background=bal<=0?'rgba(0,230,118,0.1)':'rgba(255,23,68,0.1)';
+    el.style.color=bal<=0?'#00e676':'#ff1744';
+    el.style.border='1px solid '+(bal<=0?'#00e676':'#ff1744');
+  }else{el.style.display='none';}
+}
+
+function saveEdit(){
+  var id=parseInt(document.getElementById('eId').value);
+  var e=entries.find(function(x){return x.id===id;});
+  if(!e){toast('❗ Entry नहीं मिली');return;}
+
+  e.name=(document.getElementById('eName').value||'').trim();
+  if(!e.name){toast('❗ Party का नाम डालें');return;}
+  e.mobile=(document.getElementById('eMob').value||'').trim();
+  e.note=(document.getElementById('eNote').value||'').trim();
+  e.date=document.getElementById('eDate').value||tod();
+
+  if(isGoods(e.type)){
+    if(!_editItems.length){toast('❗ कम से कम एक item होना चाहिए');return;}
+    // Reverse old stock, apply new
+    revStock(e);
+    e.items=_editItems;
+    e.amount=_editItems.reduce(function(s,i){return s+i.amount;},0);
+    e.paid=parseFloat(document.getElementById('ePaid').value)||0;
+    e.balance=e.amount-e.paid;
+    updStock(_editItems,e.type);
+  }else{
+    var amt=parseFloat(document.getElementById('eAmt').value)||0;
+    if(!amt||amt<=0){toast('❗ राशि डालें');return;}
+    e.amount=amt;
+  }
+
+  buildNames();saveData();closeModal('editMod');
+  toast('✅ Updated!');renderAll();
+}
+
+// ════════════════════════════════════════
+// ENTRY ROW HTML
+// ════════════════════════════════════════
+function eRow(e){
+  var col=tClr(e.type);
+  var itemsTxt='';
+  if(e.items&&e.items.length){
+    itemsTxt=e.items.map(function(i){
+      return esc(i.name)+(i.qty?' × '+(i.qty%1===0?i.qty:i.qty.toFixed(2))+(i.unit?' '+i.unit:''):'')+' = ₹'+Number(i.amount||0).toLocaleString('en-IN',{minimumFractionDigits:0});
+    }).join(' | ');
+  }
+  var badge='';
+  if(isGoods(e.type)&&(e.balance||0)>0)badge='<span class="ebal-badge" style="background:rgba(255,23,68,0.2);color:#ff1744;">⚠️ बाकी '+fmt(e.balance)+'</span>';
+  else if(isGoods(e.type)&&(e.balance||0)<=0&&e.amount>0&&e.items&&e.items.length)badge='<span class="ebal-badge" style="background:rgba(0,230,118,0.2);color:#00e676;">✅ चुकाया</span>';
+  return '<div class="erow">'+
+    '<div class="eico '+e.type+'">'+tIco(e.type)+'</div>'+
+    '<div class="einfo">'+
+      '<div class="etitle">'+esc(e.name)+'<span style="font-size:10px;background:rgba(255,202,40,0.15);color:#ffca28;border-radius:4px;padding:1px 5px;margin-left:5px;">'+tLbl(e.type)+'</span></div>'+
+      (itemsTxt?'<div class="emeta" style="color:#ff9800;font-size:11px;">📦 '+itemsTxt+'</div>':'')+
+      '<div class="emeta">'+fd(e.date)+(e.note?' • '+esc(e.note):'')+(e.mobile?' • 📞'+e.mobile:'')+'</div>'+
+      (badge?'<div style="margin-top:3px;">'+badge+'</div>':'')+
+    '</div>'+
+    '<div class="eright">'+
+      '<div class="eamt" style="color:'+col+';">'+fmt(e.amount)+'</div>'+
+      (e.paid>0?'<div style="font-size:10px;color:var(--muted);">दिया: '+fmt(e.paid)+'</div>':'')+
+      '<div class="ebtns">'+
+        '<button class="abtn" onclick="shareWAEntry('+e.id+')" style="color:#25d366;" title="WhatsApp">📲</button>'+
+        '<button class="abtn" onclick="closeModal(\'partyMod\');openEdit('+e.id+')" style="color:#ffca28;">✏️</button>'+
+        '<button class="abtn" onclick="closeModal(\'partyMod\');askDel('+e.id+')" style="color:#ff1744;">🗑️</button>'+
+      '</div>'+
+    '</div>'+
+  '</div>';
+}
+
+// ════════════════════════════════════════
+// PARTY DETAIL
+// ════════════════════════════════════════
+function openParty(name){
+  var txns=entries.filter(function(e){return e.name===name;}).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  var bal=getBalance(name);
+  var mob='';
+  entries.forEach(function(e){if(e.name===name&&e.mobile)mob=e.mobile;});
+  var hasSell=txns.some(function(e){return e.type==='sell';});
+  var hasBuy=txns.some(function(e){return e.type==='buy'||e.type==='maal';});
+  var bc=bal>0?'#ff1744':bal<0?'#00e676':'var(--muted)';
+  var bl=bal>0?t('weGet'):bal<0&&hasBuy?t('weGive'):bal<0?'Cash मिला था':'✅ Settled';
+  var sell=txns.filter(function(e){return e.type==='sell';}).reduce(function(s,e){return s+e.amount;},0);
+  var buy=txns.filter(function(e){return e.type==='buy'||e.type==='maal';}).reduce(function(s,e){return s+e.amount;},0);
+  var recv=txns.filter(function(e){return e.type==='receive'||e.type==='in';}).reduce(function(s,e){return s+e.amount;},0);
+  var paid=txns.filter(function(e){return e.type==='pay'||e.type==='out';}).reduce(function(s,e){return s+e.amount;},0);
+  var html=
+    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">'+
+      '<div style="width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,#ffca28,#ff8f00);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#000;">'+name.charAt(0).toUpperCase()+'</div>'+
+      '<div><div style="font-size:17px;font-weight:900;color:#ffca28;">'+esc(name)+'</div>'+(mob?'<div style="font-size:12px;color:var(--muted);">📞 '+mob+'</div>':'')+'</div>'+
+    '</div>'+
+    '<div style="background:var(--surface);border-radius:12px;padding:14px;text-align:center;border:2px solid '+bc+';margin-bottom:12px;">'+
+      '<div style="font-size:11px;color:var(--muted);font-weight:700;">BALANCE</div>'+
+      '<div style="font-size:26px;font-weight:900;color:'+bc+';">'+fmt(Math.abs(bal))+'</div>'+
+      '<div style="font-size:12px;color:'+bc+';font-weight:700;">'+bl+'</div>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">'+
+      (sell?'<div style="background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.3);border-radius:10px;padding:10px;"><div style="font-size:10px;color:var(--muted);">🛒 '+t('sell')+'</div><div style="font-weight:900;color:#00e676;font-size:13px;">'+fmt(sell)+'</div></div>':'')+
+      (buy?'<div style="background:rgba(255,109,0,0.08);border:1px solid rgba(255,109,0,0.3);border-radius:10px;padding:10px;"><div style="font-size:10px;color:var(--muted);">📦 '+t('buy')+'</div><div style="font-weight:900;color:#ff6d00;font-size:13px;">'+fmt(buy)+'</div></div>':'')+
+      (recv?'<div style="background:rgba(68,138,255,0.08);border:1px solid rgba(68,138,255,0.3);border-radius:10px;padding:10px;"><div style="font-size:10px;color:var(--muted);">💰 '+t('recv')+'</div><div style="font-weight:900;color:#448aff;font-size:13px;">'+fmt(recv)+'</div></div>':'')+
+      (paid?'<div style="background:rgba(255,23,68,0.08);border:1px solid rgba(255,23,68,0.3);border-radius:10px;padding:10px;"><div style="font-size:10px;color:var(--muted);">💸 '+t('pay')+'</div><div style="font-weight:900;color:#ff1744;font-size:13px;">'+fmt(paid)+'</div></div>':'')+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:14px;">'+
+      '<button style="background:rgba(0,230,118,0.15);border:none;border-radius:10px;padding:10px 4px;color:#00e676;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;" onclick="closeModal(\'partyMod\');openAddWith(\'sell\',\''+esc(name)+'\',\''+mob+'\')">🛒 '+t('sell')+'</button>'+
+      '<button style="background:rgba(255,109,0,0.15);border:none;border-radius:10px;padding:10px 4px;color:#ff6d00;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;" onclick="closeModal(\'partyMod\');openAddWith(\'buy\',\''+esc(name)+'\',\''+mob+'\')">📦 '+t('buy')+'</button>'+
+      '<button style="background:rgba(68,138,255,0.15);border:none;border-radius:10px;padding:10px 4px;color:#448aff;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;" onclick="closeModal(\'partyMod\');openAddWith(\'receive\',\''+esc(name)+'\',\''+mob+'\')">💰 '+t('recv')+'</button>'+
+      '<button style="background:rgba(255,23,68,0.15);border:none;border-radius:10px;padding:10px 4px;color:#ff1744;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;" onclick="closeModal(\'partyMod\');openAddWith(\'pay\',\''+esc(name)+'\',\''+mob+'\')">💸 '+t('pay')+'</button>'+
+    '</div>'+
+    '<div style="font-size:11px;font-weight:800;color:var(--muted);margin-bottom:8px;text-transform:uppercase;">'+t('history')+' ('+txns.length+')</div>'+
+    txns.map(eRow).join('');
+  document.getElementById('partyContent').innerHTML=html;
+  openModal('partyMod');
+}
+
+function openAddWith(tp,name,mob){
+  openAdd();
+  setTimeout(function(){
+    setType(tp);
+    document.getElementById('tParty').value=name;
+    if(mob)document.getElementById('tMob').value=mob;
+  },100);
+}
+
+// ════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════
+function renderDash(){
+  var today=tod();
+  var ps=getAllParties();
+  var toRecv=0,toPay=0;
+  ps.forEach(function(p){
+    // Check if this party has any sell/buy transaction
+    var hasSell=entries.some(function(e){return e.name===p.name&&(e.type==='sell');});
+    var hasBuy=entries.some(function(e){return e.name===p.name&&(e.type==='buy'||e.type==='maal');});
+    var b=getBalance(p.name);
+    if(b>0)toRecv+=b;          // Customer owes us
+    else if(b<0&&hasBuy)toPay+=Math.abs(b); // We owe supplier (only if we bought from them)
+    // Pure cash received without sell → don't count in toPay
+  });
+  var sell=entries.filter(function(e){return e.type==='sell';}).reduce(function(s,e){return s+e.amount;},0);
+  var buy=entries.filter(function(e){return e.type==='buy'||e.type==='maal';}).reduce(function(s,e){return s+e.amount;},0);
+  var stVal=Object.values(stock).reduce(function(s,it){return s+(it.qty||0)*(it.avgRate||0);},0);
+
+  // Cash in Hand = Money received + Cash from sell - Money paid - Cash for buy
+  var cashIn=entries.filter(function(e){return e.type==='receive'||e.type==='in';}).reduce(function(s,e){return s+e.amount;},0);
+  cashIn+=entries.filter(function(e){return e.type==='sell';}).reduce(function(s,e){return s+(e.paid||0);},0);
+  var cashOut=entries.filter(function(e){return e.type==='pay'||e.type==='out';}).reduce(function(s,e){return s+e.amount;},0);
+  cashOut+=entries.filter(function(e){return e.type==='buy'||e.type==='maal';}).reduce(function(s,e){return s+(e.paid||0);},0);
+  var cashInHand=cashIn-cashOut;
+
+  document.getElementById('dashStats').innerHTML=
+    sc2('💰',fmt(toRecv),t('toRecv'),'#00e676',"goTab(1);setPF('recv',document.querySelectorAll('#tc1 .fbtn')[1])")+
+    sc2('💸',fmt(toPay),t('toPay'),'#ff1744',"goTab(1);setPF('pay',document.querySelectorAll('#tc1 .fbtn')[2])")+
+    sc2('💵',fmt(cashInHand),'Cash in Hand',cashInHand>=0?'#ffca28':'#ff1744',"goTab(2);setKF('all',document.querySelectorAll('#tc2 .fbtn')[0])")+
+    sc2('🛒',fmt(sell),t('totalSell'),'#448aff',"goTab(2);setKF('sell',document.querySelectorAll('#tc2 .fbtn')[1])")+
+    sc2('📦',fmt(buy),t('totalBuy'),'#ff6d00',"goTab(2);setKF('buy',document.querySelectorAll('#tc2 .fbtn')[2])")+
+    sc2('👥',ps.length,'Parties','#ce93d8',"goTab(1);setPF('all',document.querySelectorAll('#tc1 .fbtn')[0])")+
+    sc2('🏪',fmt(stVal),t('stockVal'),'#448aff',"goTab(3)");
+  document.getElementById('todayDt').textContent=fd(today);
+  var todayE=entries.filter(function(e){return e.date===today;});
+  document.getElementById('todayList').innerHTML=todayE.length?
+    todayE.map(eRow).join(''):
+    '<div class="empty"><div class="eico-big">📭</div>'+t('noToday')+'</div>';
+  var top=ps.map(function(p){return {name:p.name,mobile:p.mobile,bal:getBalance(p.name)};})
+    .filter(function(p){return p.bal!==0;})
+    .sort(function(a,b){return Math.abs(b.bal)-Math.abs(a.bal);}).slice(0,6);
+  document.getElementById('dashParties').innerHTML=top.length?top.map(function(p){
+    var bc=p.bal>0?'#ff1744':'#00e676';
+    var bl=p.bal>0?t('weGet'):t('weGive');
+    return '<div class="prow" onclick="openParty(\''+p.name.replace(/'/g,"\\'")+'\')">'+'<div class="pav">'+p.name.charAt(0).toUpperCase()+'</div>'+
+      '<div class="pinfo"><div class="pname">'+esc(p.name)+'</div>'+(p.mobile?'<div class="psub">📞 '+p.mobile+'</div>':'')+
+      '</div><div><div class="pbal" style="color:'+bc+';">'+fmt(Math.abs(p.bal))+'</div><div class="pbs" style="color:'+bc+';">'+bl+'</div></div></div>';
+  }).join(''):
+  '<div class="empty">'+t('noDue')+'</div>';
+}
+function sc2(ico,val,lbl,clr,action){
+  var click=action?'onclick="'+action+'"':'';
+  return '<div class="scard" style="border-color:'+clr+';cursor:'+(action?'pointer':'default')+';" '+click+'>'+
+    '<div class="si">'+ico+'</div><div class="sv" style="color:'+clr+';">'+val+'</div><div class="sl">'+lbl+'</div></div>';
+}
+
+// ════════════════════════════════════════
+// PARTIES
+// ════════════════════════════════════════
+var _pf='all';
+function setPF(f,btn){
+  _pf=f;
+  document.querySelectorAll('#tc1 .fbtn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');dirty[1]=true;goTab(1);
+}
+function renderParties(){
+  var ps=getAllParties().map(function(p){
+    var bal=getBalance(p.name);
+    var hasSell=entries.some(function(e){return e.name===p.name&&e.type==='sell';});
+    var hasBuy=entries.some(function(e){return e.name===p.name&&(e.type==='buy'||e.type==='maal');});
+    // Label: positive = customer owes us, negative+hasBuy = we owe supplier, negative only = they gave us cash in advance
+    var label='';
+    if(bal>0)label=t('weGet');
+    else if(bal<0&&hasBuy)label=t('weGive');
+    else if(bal<0)label='Cash मिला';
+    else label=t('settled');
+    return {name:p.name,mobile:p.mobile,bal:bal,hasSell:hasSell,hasBuy:hasBuy,label:label};
+  });
+  if(_pf==='recv')ps=ps.filter(function(p){return p.bal>0;});
+  else if(_pf==='pay')ps=ps.filter(function(p){return p.bal<0&&p.hasBuy;});
+  else if(_pf==='zero')ps=ps.filter(function(p){return p.bal===0;});
+  ps.sort(function(a,b){return Math.abs(b.bal)-Math.abs(a.bal);});
+  document.getElementById('partyList').innerHTML=ps.length?ps.map(function(p){
+    var bc=p.bal>0?'#ff1744':p.bal<0?'#00e676':'var(--muted)';
+    return '<div class="prow" onclick="openParty(\''+p.name.replace(/'/g,"\\'")+'\')">'+
+      '<div class="pav">'+p.name.charAt(0).toUpperCase()+'</div>'+
+      '<div class="pinfo"><div class="pname">'+esc(p.name)+'</div>'+(p.mobile?'<div class="psub">📞 '+p.mobile+'</div>':'')+'</div>'+
+      '<div><div class="pbal" style="color:'+bc+';">'+fmt(Math.abs(p.bal))+'</div><div class="pbs" style="color:'+bc+';">'+p.label+'</div></div></div>';
+  }).join(''):
+  '<div class="empty"><div class="eico-big">👥</div>कोई party नहीं</div>';
+}
+
+// ════════════════════════════════════════
+// KHATA
+// ════════════════════════════════════════
+var _kf='all';
+function setKF(f,btn){
+  _kf=f;
+  document.querySelectorAll('#tc2 .fbtn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');dirty[2]=true;goTab(2);
+}
+function renderKhata(){
+  var list=entries.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  if(_kf!=='all'&&_kf!=='today')list=list.filter(function(e){return e.type===_kf;});
+  else if(_kf==='today')list=list.filter(function(e){return e.date===tod();});
+  renderKList(list,'📋 '+list.length+' entries');
+}
+function renderKList(list,title){
+  document.getElementById('khataTitle').textContent=title||'';
+  document.getElementById('khataList').innerHTML=list.length?
+    list.slice(0,80).map(eRow).join(''):
+    '<div class="empty"><div class="eico-big">📒</div>कोई entry नहीं</div>';
+}
+
+// ════════════════════════════════════════
+// STOCK
+// ════════════════════════════════════════
+function renderStock(){
+  var its=Object.entries(stock).map(function(kv){
+    return {name:kv[0],qty:kv[1].qty||0,rate:kv[1].avgRate||0,unit:kv[1].unit||''};
+  }).filter(function(i){return i.qty>0;}).sort(function(a,b){return a.name.localeCompare(b.name);});
+  var val=its.reduce(function(s,i){return s+i.qty*i.rate;},0);
+  var low=its.filter(function(i){return i.qty<5;}).length;
+  document.getElementById('stockStats').innerHTML=
+    sc2('📦',its.length,t('items'),'#ff6d00')+
+    sc2('💰',fmt(val),t('stockVal'),'#ffca28')+
+    sc2('⚠️',low,t('lowStock'),'#ff1744');
+  document.getElementById('stockList').innerHTML=its.length?its.map(function(it){
+    var low=it.qty<5;
+    return '<div class="strow">'+
+      '<div style="width:36px;height:36px;border-radius:9px;background:rgba(255,109,0,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;margin-right:10px;">📦</div>'+
+      '<div style="flex:1;"><div style="font-weight:800;font-size:14px;">'+esc(it.name)+'</div>'+
+      '<div style="font-size:11px;color:var(--muted);">Avg Rate: ₹'+it.rate.toFixed(2)+(it.unit?' / '+it.unit:'')+'</div></div>'+
+      '<div style="text-align:right;"><div style="font-weight:900;font-size:15px;color:'+(low?'#ff1744':'#ffca28')+';">'+(it.qty%1===0?it.qty:it.qty.toFixed(2))+(it.unit?' '+it.unit:'')+'</div>'+
+      '<div style="font-size:10px;color:var(--muted);">'+fmt(it.qty*it.rate)+'</div></div></div>';
+  }).join(''):
+  '<div class="empty"><div class="eico-big">📦</div>'+t('noStock')+'</div>';
+}
+
+// ════════════════════════════════════════
+// REPORT
+// ════════════════════════════════════════
+function renderReport(){
+  var mon=document.getElementById('monPicker').value;if(!mon)return;
+  var list=entries.filter(function(e){return e.date.startsWith(mon);}).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  var sell=list.filter(function(e){return e.type==='sell';}).reduce(function(s,e){return s+e.amount;},0);
+  var buy=list.filter(function(e){return e.type==='buy'||e.type==='maal';}).reduce(function(s,e){return s+e.amount;},0);
+  var recv=list.filter(function(e){return e.type==='receive'||e.type==='in';}).reduce(function(s,e){return s+e.amount;},0);
+  var paid=list.filter(function(e){return e.type==='pay'||e.type==='out';}).reduce(function(s,e){return s+e.amount;},0);
+
+  document.getElementById('repStats').innerHTML=
+    sc2('🛒',fmt(sell),t('sell'),'#00e676')+
+    sc2('📦',fmt(buy),t('buy'),'#ff6d00')+
+    sc2('💰',fmt(recv),t('recv'),'#448aff')+
+    sc2('💸',fmt(paid),t('pay'),'#ff1744')+
+    sc2('📋',list.length,'Entries','#ffca28');
+
+  var ra=document.getElementById('repActions');
+  if(ra)ra.style.display=list.length?'block':'none';
+  document.getElementById('repTitle').textContent=mon+' — '+list.length+' entries';
+  document.getElementById('repList').innerHTML=list.length?
+    list.map(eRow).join(''):
+    '<div class="empty">इस महीने कोई entry नहीं</div>';
+}
+
+function shareReportWA(){
+  var mon=document.getElementById('monPicker').value;if(!mon)return;
+  var list=entries.filter(function(e){return e.date.startsWith(mon);}).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  var sell=list.filter(function(e){return e.type==='sell';}).reduce(function(s,e){return s+e.amount;},0);
+  var buy=list.filter(function(e){return e.type==='buy'||e.type==='maal';}).reduce(function(s,e){return s+e.amount;},0);
+  var recv=list.filter(function(e){return e.type==='receive'||e.type==='in';}).reduce(function(s,e){return s+e.amount;},0);
+  var paid=list.filter(function(e){return e.type==='pay'||e.type==='out';}).reduce(function(s,e){return s+e.amount;},0);
+  var monNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var monParts=mon.split('-');
+  var monLabel=monNames[parseInt(monParts[1])-1]+' '+monParts[0];
+
+  var msg=
+    '╔════════════════════╗\n'+
+    '║  🏪 *KHATA BHAI NDS*  ║\n'+
+    '╚════════════════════╝\n\n'+
+    '*'+cfg.shopName+'*\n'+
+    (cfg.shopPhone?'📞 '+cfg.shopPhone+'\n':'')+
+    '\n📊 *मासिक रिपोर्ट*\n'+
+    '📅 *'+monLabel+'*\n'+
+    '━━━━━━━━━━━━━━━━━━━━\n\n';
+
+  // Entries grouped by date
+  var byDate={};
+  list.forEach(function(e){
+    if(!byDate[e.date])byDate[e.date]=[];
+    byDate[e.date].push(e);
+  });
+  var dates=Object.keys(byDate).sort();
+  var shown=0;
+  dates.forEach(function(dt){
+    if(shown>=15)return;
+    msg+='📅 *'+fd(dt)+'*\n';
+    byDate[dt].forEach(function(e){
+      if(shown>=15)return;
+      var icon={sell:'🛒',buy:'📦',receive:'💵',pay:'💸',in:'💵',out:'💸',maal:'📦'}[e.type]||'📋';
+      var itemN=e.items&&e.items.length?' ('+e.items.map(function(i){return i.name;}).join(', ')+')':'';
+      msg+=icon+' '+e.name+itemN+' — *'+fmt(e.amount)+'*\n';
+      shown++;
+    });
+    msg+='\n';
+  });
+  if(list.length>15)msg+='_...और '+(list.length-15)+' entries_\n\n';
+
+  msg+=
+    '━━━━━━━━━━━━━━━━━━━━\n'+
+    '📈 *महीने का हिसाब:*\n'+
+    '━━━━━━━━━━━━━━━━━━━━\n'+
+    '🛒 माल बेचा:     *'+fmt(sell)+'*\n'+
+    '📦 माल खरीदा:  *'+fmt(buy)+'*\n'+
+    '💵 पैसे मिले:     *'+fmt(recv)+'*\n'+
+    '💸 पैसे दिए:       *'+fmt(paid)+'*\n'+
+    '📋 कुल entries:  *'+list.length+'*\n'+
+    '━━━━━━━━━━━━━━━━━━━━\n'+
+    '_Khata Bhai by NDS_ 📒';
+
+  if(cfg.ownerMobile){
+    window.open('https://wa.me/91'+cfg.ownerMobile+'?text='+encodeURIComponent(msg),'_blank');
+  }else if(navigator.share){
+    navigator.share({title:'Report '+mon,text:msg}).catch(function(){
+      window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(msg),'_blank');
+    });
+  }else{
+    window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(msg),'_blank');
+  }
+}
+
+// ════════════════════════════════════════
+// RENDERS ARRAY
+// ════════════════════════════════════════
+var renders=[renderDash,renderParties,renderKhata,renderStock,renderReport];
+
+// ════════════════════════════════════════
+// SHOP & PIN
+// ════════════════════════════════════════
+function openShopMod(){
+  document.getElementById('shName').value=cfg.shopName||'';
+  document.getElementById('shAddr').value=cfg.shopAddr||'';
+  document.getElementById('shPhone').value=cfg.shopPhone||'';
+  document.getElementById('shGST').value=cfg.shopGST||'';
+  openModal('shopMod');
+}
+function saveShop(){
+  cfg.shopName=(document.getElementById('shName').value||'').trim()||'Khata Bhai';
+  cfg.shopAddr=(document.getElementById('shAddr').value||'').trim();
+  cfg.shopPhone=(document.getElementById('shPhone').value||'').trim();
+  cfg.shopGST=(document.getElementById('shGST').value||'').trim();
+  saveData();closeModal('shopMod');applyShop();toast('✅ Saved!');
+}
+function applyShop(){
+  document.getElementById('hName').textContent=cfg.shopName;
+  document.getElementById('hSub').textContent=cfg.shopAddr||'by NDS';
+  document.getElementById('mShop').textContent=cfg.shopName;
+}
+function savePin(){
+  var np=document.getElementById('newPin').value;
+  var cp=document.getElementById('cfmPin').value;
+  if(np.length!==4||!/^[0-9]{4}$/.test(np)){toast('❗ 4 अंकों का PIN डालें');return;}
+  if(np!==cp){toast('❗ PIN match नहीं');return;}
+  cfg.pin=np;saveData();closeModal('pinMod');toast('✅ PIN बदल गया!');
+}
+
+// ════════════════════════════════════════
+// SETUP
+// ════════════════════════════════════════
+function doSetup(){
+  var shop=(document.getElementById('sShop').value||'').trim();
+  if(!shop){toast('❗ दुकान का नाम डालें');return;}
+  cfg.shopName=shop;cfg.registered=true;
+  saveData();document.getElementById('setupScr').style.display='none';
+  applyShop();renderAll();toast('✅ स्वागत है! '+shop);
+}
+
+// ════════════════════════════════════════
+// LANGUAGE
+// ════════════════════════════════════════
+var LANG_NAMES={hi:'🇮🇳 हिंदी',en:'🇬🇧 English',mr:'🇮🇳 मराठी',gu:'🇮🇳 ગુજરાતી',
+  pa:'🇮🇳 ਪੰਜਾਬੀ',ta:'🇮🇳 தமிழ்',te:'🇮🇳 తెలుగు',bn:'🇮🇳 বাংলা'};
+
+function buildLangGrid(){
+  var html=Object.keys(LANG_NAMES).map(function(l){
+    return '<button class="lbtn'+(l===lang?' active':'')+'" onclick="setLang(\''+l+'\')">'+LANG_NAMES[l]+'</button>';
+  }).join('');
+  document.getElementById('langGrid').innerHTML=html;
+}
+
+function setLang(l){
+  lang=l;cfg.lang=l;saveData();closeModal('langMod');
+  applyLang();renderAll();toast('✅ '+t('langN'));
+}
+
+function applyLang(){
+  document.getElementById('mLangName').textContent=t('langN');
+  document.getElementById('addBtnEl').textContent=t('addBtn');
+  document.getElementById('todayLbl').textContent='📅 '+t('todayHis');
+  document.getElementById('partyOvLbl').textContent='👥 '+t('parties_ov');
+  // Tabs
+  var tns=['dash','parties','khata','stock','report'];
+  var tis=['🏠','👥','📋','📦','📊'];
+  for(var i=0;i<5;i++){
+    var el=document.getElementById('tab'+i);
+    if(el)el.textContent=tis[i]+' '+t(tns[i]);
+  }
+  // Form labels
+  var pl=document.getElementById('tParty');if(pl)pl.placeholder=t('partyLbl');
+  var ml=document.getElementById('tMob');if(ml)ml.placeholder=t('mobLbl');
+  var vl=document.getElementById('tVil');if(vl)vl.placeholder=t('vilLbl');
+  var nl=document.getElementById('tNote');if(nl)nl.placeholder=t('noteLbl');
+  var al=document.getElementById('tAmt');if(al)al.placeholder=t('amtLbl');
+  var pal=document.getElementById('tPaid');if(pal)pal.placeholder=t('paidLbl');
+  var in1=document.getElementById('iName');if(in1)in1.placeholder=t('itName');
+  var iq=document.getElementById('iQty');if(iq)iq.placeholder=t('itQty');
+  var iu=document.getElementById('iUnit');if(iu)iu.placeholder=t('itUnit');
+  var ir=document.getElementById('iRate');if(ir)ir.placeholder=t('itRate');
+  var ia=document.getElementById('iAmt');if(ia)ia.placeholder=t('itAmt');
+  var aib=document.getElementById('addItemBtn');if(aib)aib.textContent=t('addMore');
+  var cb=document.getElementById('contactBtn');if(cb)cb.textContent=t('contact');
+  var sb=document.getElementById('saveTxnBtn');if(sb)sb.textContent=t('save');
+  // Type buttons
+  var ls=[['lblSell','sell'],['lblBuy','buy'],['lblRecv','recv'],['lblPay','pay']];
+  ls.forEach(function(l){var el=document.getElementById(l[0]);if(el)el.textContent=t(l[1]);});
+  // Menu
+  var shopEl=document.getElementById('mShopLbl');if(shopEl)shopEl.textContent=t('shopInfo');
+  var pinEl=document.getElementById('mPinLbl');if(pinEl)pinEl.textContent=t('pinChg');
+  var thEl=document.getElementById('mThemeLbl');if(thEl)thEl.textContent=cfg.theme==='light'?t('themeDark'):t('themeLight');
+  var thDes=document.getElementById('mThemeDes');if(thDes)thDes.textContent=t('themeChg');
+  var bkEl=document.getElementById('mBackLbl');if(bkEl)bkEl.textContent=t('backup');
+  var reEl=document.getElementById('mRestLbl');if(reEl)reEl.textContent=t('restore');
+  var clEl=document.getElementById('mClearLbl');if(clEl)clEl.textContent=t('clear');
+  // Filters
+  var pf0=document.getElementById('pf0');if(pf0)pf0.textContent=t('allPar');
+  var pf1=document.getElementById('pf1');if(pf1)pf1.textContent=t('toRecv');
+  var pf2=document.getElementById('pf2');if(pf2)pf2.textContent=t('toPay');
+  var pf3=document.getElementById('pf3');if(pf3)pf3.textContent='✅ '+t('settled');
+  var kfT=document.getElementById('kfToday');if(kfT)kfT.textContent=t('today');
+  var kfA=document.getElementById('kfSell');if(kfA)kfA.textContent='🛒 '+t('sell');
+  var kfB=document.getElementById('kfBuy');if(kfB)kfB.textContent='📦 '+t('buy');
+  var kfR=document.getElementById('kfRecv');if(kfR)kfR.textContent='💰 '+t('recv');
+  var kfP=document.getElementById('kfPay');if(kfP)kfP.textContent='💸 '+t('pay');
+  var stTl=document.getElementById('stockTitle');if(stTl)stTl.textContent=t('stockList');
+  var pinLbl=document.getElementById('pinLabel');if(pinLbl)pinLbl.textContent='PIN '+t('pinChg');
+  buildLangGrid();
+}
+
+// ════════════════════════════════════════
+// BILL VIEW & PRINT
+// ════════════════════════════════════════
+var _billId=null;
+function viewBill(id){
+  var e=entries.find(function(x){return x.id===id;});
+  if(!e)return;
+  _billId=id;
+  var items=e.items||[];
+  var total=e.amount||0;
+  var paid=e.paid||0;
+  var bal=e.balance||0;
+  var html=
+    '<div id="printBill" style="font-family:sans-serif;">'+
+    '<div style="text-align:center;padding-bottom:12px;border-bottom:2px dashed var(--border);margin-bottom:12px;">'+
+      '<div style="font-size:20px;font-weight:900;color:#ffca28;">'+esc(cfg.shopName)+'</div>'+
+      (cfg.shopAddr?'<div style="font-size:11px;color:var(--muted);">'+esc(cfg.shopAddr)+'</div>':'')+
+      (cfg.shopPhone?'<div style="font-size:11px;color:var(--muted);">📞 '+cfg.shopPhone+'</div>':'')+
+      (cfg.shopGST?'<div style="font-size:11px;color:var(--muted);">GST: '+cfg.shopGST+'</div>':'')+
+    '</div>'+
+    '<div style="display:flex;justify-content:space-between;margin-bottom:12px;">'+
+      '<div>'+
+        '<div style="font-size:11px;color:var(--muted);">Customer</div>'+
+        '<div style="font-weight:800;font-size:15px;">'+esc(e.name)+'</div>'+
+        (e.mobile?'<div style="font-size:11px;color:var(--muted);">📞 '+e.mobile+'</div>':'')+
+      '</div>'+
+      '<div style="text-align:right;">'+
+        '<div style="font-size:11px;color:var(--muted);">Bill Date</div>'+
+        '<div style="font-weight:700;font-size:13px;">'+fd(e.date)+'</div>'+
+        '<div style="font-size:11px;color:var(--muted);">Bill #'+e.id.toString().slice(-6)+'</div>'+
+      '</div>'+
+    '</div>'+
+    '<table style="width:100%;border-collapse:collapse;margin-bottom:12px;font-size:13px;">'+
+      '<tr style="background:rgba(255,202,40,0.15);font-weight:700;">'+
+        '<td style="padding:8px 6px;border-bottom:1px solid var(--border);">माल</td>'+
+        '<td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:center;">Qty</td>'+
+        '<td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:right;">Rate</td>'+
+        '<td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:right;">Amount</td>'+
+      '</tr>'+
+    items.map(function(it){
+      return '<tr>'+
+        '<td style="padding:8px 6px;border-bottom:1px solid var(--border);">'+esc(it.name)+'</td>'+
+        '<td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:center;">'+(it.qty||'-')+(it.unit?' '+it.unit:'')+'</td>'+
+        '<td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:right;">'+(it.rate?'₹'+Number(it.rate).toLocaleString('en-IN'):'-')+'</td>'+
+        '<td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:right;font-weight:700;">'+fmt(it.amount)+'</td>'+
+      '</tr>';
+    }).join('')+
+    '</table>'+
+    '<div style="border-top:2px dashed var(--border);padding-top:10px;">'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px;">'+
+        '<span style="font-weight:800;font-size:15px;">कुल राशि:</span>'+
+        '<span style="font-weight:900;font-size:17px;color:#ffca28;">'+fmt(total)+'</span>'+
+      '</div>'+
+      (paid>0?'<div style="display:flex;justify-content:space-between;margin-bottom:6px;">'+
+        '<span style="color:var(--muted);">Payment मिला:</span>'+
+        '<span style="color:#00e676;font-weight:700;">'+fmt(paid)+'</span>'+
+      '</div>':'')+'</div>'+
+      (bal>0?'<div style="display:flex;justify-content:space-between;background:rgba(255,23,68,0.1);border:1px solid #ff1744;border-radius:8px;padding:10px;margin-top:8px;">'+
+        '<span style="font-weight:800;color:#ff1744;">बाकी / Balance:</span>'+
+        '<span style="font-weight:900;font-size:16px;color:#ff1744;">'+fmt(bal)+'</span>'+
+      '</div>':
+      '<div style="text-align:center;background:rgba(0,230,118,0.1);border:1px solid #00e676;border-radius:8px;padding:10px;margin-top:8px;color:#00e676;font-weight:800;">✅ पूरा Payment मिल गया</div>')+
+    (e.note?'<div style="font-size:12px;color:var(--muted);margin-top:8px;">📝 '+esc(e.note)+'</div>':'')+
+    '<div style="text-align:center;font-size:11px;color:var(--muted);margin-top:14px;border-top:1px dashed var(--border);padding-top:8px;">Powered by Khata Bhai (NDS)</div>'+
+    '</div>';
+  document.getElementById('billBody').innerHTML=html;
+  openModal('billMod');
+}
+
+function printBill(){
+  var html=document.getElementById('printBill');
+  if(!html)return;
+  var w=window.open('','_blank');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Bill</title>'+
+    '<style>body{font-family:sans-serif;max-width:400px;margin:0 auto;padding:20px;color:#000;}'+
+    'table{width:100%;border-collapse:collapse;}td{padding:6px;border-bottom:1px solid #ccc;font-size:13px;}'+
+    '@media print{@page{margin:5mm;}}</style></head><body>'+
+    html.outerHTML+'</body></html>');
+  w.document.close();
+  setTimeout(function(){w.print();},400);
+}
+
+function shareBillWA(){
+  if(!_billId)return;
+  var e=entries.find(function(x){return x.id===_billId;});
+  if(!e)return;
+  var items=e.items||[];
+  var msg=
+    '╔══════════════════╗\n'+
+    '║   🧾 *KHATA BHAI NDS*   ║\n'+
+    '╚══════════════════╝\n\n'+
+    '*'+cfg.shopName+'*\n'+
+    (cfg.shopAddr?'📍 '+cfg.shopAddr+'\n':'')+
+    (cfg.shopPhone?'📞 '+cfg.shopPhone+'\n':'')+
+    (cfg.shopGST?'GST: '+cfg.shopGST+'\n':'')+
+    '\n🧾 *BILL / INVOICE*\n'+
+    '━━━━━━━━━━━━━━━━━━\n'+
+    '👤 *'+e.name+'*\n'+
+    (e.mobile?'📱 '+e.mobile+'\n':'')+
+    '📅 Date: '+fd(e.date)+'\n'+
+    '#️⃣ Bill No: '+e.id.toString().slice(-6)+'\n'+
+    '━━━━━━━━━━━━━━━━━━\n\n'+
+    '*📦 माल की जानकारी:*\n'+
+    '┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄\n';
+  items.forEach(function(it,idx){
+    msg+=(idx+1)+'. *'+it.name+'*\n';
+    if(it.qty)msg+='   '+it.qty+(it.unit?' '+it.unit:'')+' × ₹'+(it.rate||0)+'\n';
+    msg+='   💵 *'+fmt(it.amount)+'*\n\n';
+  });
+  msg+='┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄\n'+
+    '💰 *कुल राशि: '+fmt(e.amount)+'*\n'+
+    (e.paid>0?'✅ Payment मिला: '+fmt(e.paid)+'\n':'')+
+    (e.balance>0?'🔴 *बाकी Balance: '+fmt(e.balance)+'*\n':'🟢 *पूरा Payment मिल गया!*\n')+
+    (e.note?'\n📝 _'+e.note+'_\n':'')+
+    '\n━━━━━━━━━━━━━━━━━━\n'+
+    '_धन्यवाद! शुभ व्यापार 🙏_\n'+
+    '_Khata Bhai by NDS_ 📒';
+  var url=e.mobile?'https://wa.me/91'+e.mobile+'?text='+encodeURIComponent(msg):
+    'https://api.whatsapp.com/send?text='+encodeURIComponent(msg);
+  window.open(url,'_blank');
+}
+// ════════════════════════════════════════
+function doBackup(){
+  var d=JSON.stringify({entries:entries,cfg:cfg,stock:stock,app:'KhataBhai',v:3,date:new Date().toISOString()});
+  document.getElementById('bkpData').value=d;
+  openModal('bkpMod');
+}
+function shareWA(){
+  var d=document.getElementById('bkpData').value;
+  var msg='KHATA_BACKUP_START\n'+d+'\nKHATA_BACKUP_END';
+  if(cfg.ownerMobile){
+    window.open('https://wa.me/91'+cfg.ownerMobile+'?text='+encodeURIComponent(msg),'_blank');
+  }else{
+    window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(msg),'_blank');
+  }
+}
+function copyBkp(){
+  var ta=document.getElementById('bkpData');ta.select();
+  try{document.execCommand('copy');toast('✅ Copied!');}catch(e){toast('Manual copy करें');}
+}
+function dlBkp(){
+  var d=document.getElementById('bkpData').value;
+  try{
+    var b=new Blob([d],{type:'application/json'});
+    var url=URL.createObjectURL(b);
+    var a=document.createElement('a');a.href=url;
+    a.download='KhataBhai_'+tod()+'.json';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url);},2000);
+    toast('✅ Downloading!');
+  }catch(e){toast('❗ Download failed');}
+}
+function doRestore(){
+  var txt=(document.getElementById('restTxt').value||'').trim();
+  if(txt.includes('KHATA_BACKUP_START'))txt=txt.replace('KHATA_BACKUP_START','').replace('KHATA_BACKUP_END','').trim();
+  if(txt.includes('KHATAB_BACKUP_START'))txt=txt.replace('KHATAB_BACKUP_START','').replace('NDS_BACKUP_END','').trim();
+  try{
+    var d=JSON.parse(txt);
+    if(d.entries)entries=d.entries;
+    if(d.cfg)cfg=Object.assign(cfg,d.cfg);
+    if(d.stock)stock=d.stock;
+    lang=cfg.lang||'hi';
+    buildNames();saveData();closeModal('restoreMod');renderAll();
+    toast('✅ Restored! '+entries.length+' entries');
+  }catch(e){toast('❗ Invalid backup');}
+}
+function restoreFile(inp){
+  if(!inp.files||!inp.files[0])return;
+  var r=new FileReader();
+  r.onload=function(ev){
+    try{
+      var d=JSON.parse(ev.target.result);
+      if(d.entries)entries=d.entries;
+      if(d.cfg)cfg=Object.assign(cfg,d.cfg);
+      if(d.stock)stock=d.stock;
+      lang=cfg.lang||'hi';
+      buildNames();saveData();renderAll();toast('✅ Restored! '+entries.length+' entries');
+    }catch(e){toast('❗ Invalid file');}
+  };r.readAsText(inp.files[0]);
+}
+function clearAll(){
+  openModal('clearMod');
+}
+function doClearAll(){
+  entries=[];stock={};saveData();buildNames();
+  closeModal('clearMod');
+  renderAll();
+  toast('🗑️ Data साफ हो गया!');
+}
+
+// ════════════════════════════════════════
+// MY NUMBER
+// ════════════════════════════════════════
+function openMyNum(){
+  document.getElementById('myNumIn').value=cfg.ownerMobile||'';
+  openModal('myNumMod');
+}
+function saveMyNum(){
+  var mob=document.getElementById('myNumIn').value.trim();
+  if(mob&&(mob.length!==10||isNaN(mob))){toast('❗ 10 अंकों का नंबर डालें');return;}
+  cfg.ownerMobile=mob;saveData();
+  var el=document.getElementById('mMyNum');
+  if(el)el.textContent=mob?'📱 +91 '+mob:'Backup के लिए नंबर';
+  closeModal('myNumMod');
+  toast(mob?'✅ Number saved: +91 '+mob:'✅ Number हटाया');
+}
+
+// ════════════════════════════════════════
+// WHATSAPP PARSE
+// ════════════════════════════════════════
+function parseWA(){
+  var raw=(document.getElementById('waTxt').value||'').trim();
+  if(!raw){toast('❗ Message paste करो');return;}
+  var low=raw.toLowerCase();
+  var nums=(raw.match(/\d[\d,]*/g)||[]).map(function(n){return n.replace(/,/g,'');});
+  var mob='';nums.forEach(function(n){if(n.length===10&&!mob)mob=n;});
+  var amts=nums.filter(function(n){return n.length>=2&&n.length<=7&&n!==mob;});
+  var amt=amts.length?parseInt(amts[0],10):'';
+  var type='receive';
+  if(/diy|de diya|gaya|गया|दिया|kharch|खर्च|paid|gave|bhej/.test(low))type='pay';
+  else if(/mil|aaya|आया|jama|received|got|credit/.test(low))type='receive';
+  var name='';
+  var pm=raw.match(/(?:से|को|ko|from|to|se)\s+([A-Za-z\u0900-\u097F]+(?:\s+[A-Za-z\u0900-\u097F]+)?)/i);
+  if(pm)name=pm[1];
+  else{var cm=raw.match(/\b[A-Z][a-z]+\b/);if(cm)name=cm[0];}
+  var dt=tod();
+  if(/kal|yesterday|कल/.test(low)){var y=new Date();y.setDate(y.getDate()-1);dt=y.toISOString().slice(0,10);}
+  closeModal('waParseMod');
+  openAdd();
+  setTimeout(function(){
+    setType(type);
+    if(name)document.getElementById('tParty').value=name;
+    if(amt)document.getElementById('tAmt').value=amt;
+    document.getElementById('tDate').value=dt;
+    if(mob)document.getElementById('tMob').value=mob;
+    document.getElementById('tNote').value=raw.length<80?raw:raw.slice(0,80);
+    toast('✏️ Form भरा — check करो और Save करो');
+  },200);
+}
+
+// ════════════════════════════════════════
+// DUE DATE
+// ════════════════════════════════════════
+function openDue(){
+  document.getElementById('dueIn').value=(cfg.dueDates||[]).join(',');
+  openModal('dueMod');
+}
+function saveDue(){
+  var raw=document.getElementById('dueIn').value||'';
+  cfg.dueDates=raw.split(',').map(function(s){return parseInt(s.trim(),10);}).filter(function(n){return n>=1&&n<=31;});
+  saveData();closeModal('dueMod');
+  checkDue();
+  toast('✅ Due dates saved: '+(cfg.dueDates.join(', ')||'none'));
+}
+function checkDue(){
+  var banner=document.getElementById('dueBanner');
+  if(!banner)return;
+  var today=new Date().getDate();
+  var key='due_'+tod();
+  var dismissed=false;
+  try{dismissed=sessionStorage.getItem(key)==='1';}catch(e){}
+  if((cfg.dueDates||[]).indexOf(today)!==-1&&!dismissed){
+    banner.innerHTML='<div style="background:linear-gradient(135deg,#ff6d00,#ff1744);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">'+
+      '<span style="color:#fff;font-weight:700;font-size:13px;">🔔 आज Payment की due date है!</span>'+
+      '<button onclick="dismissDue()" style="background:rgba(255,255,255,0.25);border:none;border-radius:7px;padding:6px 12px;color:#fff;font-weight:800;font-size:12px;cursor:pointer;">ठीक है</button></div>';
+  }else{banner.innerHTML='';}
+}
+function dismissDue(){
+  try{sessionStorage.setItem('due_'+tod(),'1');}catch(e){}
+  var b=document.getElementById('dueBanner');if(b)b.innerHTML='';
+}
+
+// ════════════════════════════════════════
+// REFRESH
+// ════════════════════════════════════════
+function doRefresh(){buildNames();markDirty();goTab(0);toast('🔄 Refreshed!');}
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+loadData();
+document.getElementById('tDate').value=tod();
+document.getElementById('monPicker').value=tmon();
+if(cfg.theme==='light')document.body.classList.add('light');
+
+if(!cfg.registered){
+  document.getElementById('setupScr').style.display='flex';
+  document.getElementById('pinScr').classList.add('hide');
+}
+
+applyShop();
+applyLang();
+buildLangGrid();
+// My Number menu update
+var myNumEl=document.getElementById('mMyNum');
+if(myNumEl&&cfg.ownerMobile)myNumEl.textContent='📱 +91 '+cfg.ownerMobile;
+checkDue();
+renderAll();
+</script>
+</body>
+</html>
