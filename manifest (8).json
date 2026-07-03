@@ -1,0 +1,93 @@
+{
+  "id": "com.nds.khatadost",
+  "name": "Khata Dost by NDS",
+  "short_name": "Khata Dost",
+  "description": "Khata Dost by NDS - आपका डिजिटल हिसाब। माल बेचो, खरीदो, पैसे लो-दो - सब एक जगह।",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "background_color": "#0f1117",
+  "theme_color": "#0f1117",
+  "orientation": "portrait",
+  "lang": "hi",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "handle_links": "preferred",
+  "categories": [
+    "finance",
+    "business",
+    "productivity"
+  ],
+  "shortcuts": [
+    {
+      "name": "Add Entry",
+      "short_name": "Add",
+      "description": "नई entry जोड़ें",
+      "url": "./index.html",
+      "icons": [
+        {
+          "src": "./icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./screenshot-1.png",
+      "sizes": "1080x2041",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Dashboard"
+    },
+    {
+      "src": "./screenshot-2.png",
+      "sizes": "1080x2032",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "New Transaction"
+    },
+    {
+      "src": "./screenshot-3.png",
+      "sizes": "1072x1951",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Settings"
+    }
+  ]
+}
